@@ -1,4 +1,4 @@
-// Authentication Management
+// Authentication Management - UPDATED VERSION
 class AuthManager {
     constructor() {
         this.currentUser = null;
@@ -7,37 +7,65 @@ class AuthManager {
     }
 
     async init() {
-        // Check for existing session
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-            this.currentUser = session.user;
-            await this.loadUserProfile();
-            this.onAuthStateChange(true);
-        }
+        try {
+            // Wait for Supabase to be ready
+            if (!supabaseManager.isReady()) {
+                console.log('Waiting for Supabase initialization...');
+                setTimeout(() => this.init(), 1000);
+                return;
+            }
 
-        // Listen for auth state changes
-        supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' && session) {
+            const supabase = supabaseManager.getClient();
+
+            // Check for existing session
+            const { data: { session }, error } = await supabase.auth.getSession();
+            
+            if (error) {
+                console.error('Session check error:', error);
+                return;
+            }
+
+            if (session) {
                 this.currentUser = session.user;
                 await this.loadUserProfile();
                 this.onAuthStateChange(true);
-            } else if (event === 'SIGNED_OUT') {
-                this.currentUser = null;
-                this.userProfile = null;
-                this.onAuthStateChange(false);
             }
-        });
+
+            // Listen for auth state changes
+            supabase.auth.onAuthStateChange(async (event, session) => {
+                console.log('Auth state changed:', event, session);
+                
+                if (event === 'SIGNED_IN' && session) {
+                    this.currentUser = session.user;
+                    await this.loadUserProfile();
+                    this.onAuthStateChange(true);
+                } else if (event === 'SIGNED_OUT') {
+                    this.currentUser = null;
+                    this.userProfile = null;
+                    this.onAuthStateChange(false);
+                } else if (event === 'USER_UPDATED') {
+                    await this.loadUserProfile();
+                }
+            });
+
+        } catch (error) {
+            console.error('Auth initialization error:', error);
+        }
     }
 
     async loadUserProfile() {
         if (!this.currentUser) return;
         
-        const { data, error } = await db.getUserProfile(this.currentUser.id);
-        if (error) {
-            console.error('Error loading user profile:', error);
-            return;
+        try {
+            const { data, error } = await db.getUserProfile(this.currentUser.id);
+            if (error) {
+                console.error('Error loading user profile:', error);
+                return;
+            }
+            this.userProfile = data;
+        } catch (error) {
+            console.error('Failed to load user profile:', error);
         }
-        this.userProfile = data;
     }
 
     onAuthStateChange(isAuthenticated) {
@@ -77,94 +105,84 @@ class AuthManager {
     }
 
     async signUp(email, password, name, referralCode = null) {
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: {
-                    name: name
-                }
+        try {
+            if (!supabaseManager.isReady()) {
+                throw new Error('Database not ready. Please try again.');
             }
-        });
 
-        if (error) {
-            throw error;
+            // Validate inputs
+            if (!email || !password || !name) {
+                throw new Error('Please fill in all required fields');
+            }
+
+            if (password.length < 6) {
+                throw new Error('Password must be at least 6 characters long');
+            }
+
+            console.log('Starting signup process...');
+
+            // Use db.signUp which handles both auth and profile creation
+            const result = await db.signUp(email, password, name, referralCode);
+            
+            if (result && result.user) {
+                await this.loadUserProfile();
+                return result;
+            }
+
+            throw new Error('Signup failed - no user returned');
+
+        } catch (error) {
+            console.error('Signup error:', error);
+            
+            // Provide user-friendly error messages
+            let userMessage = error.message;
+            
+            if (error.message.includes('Invalid login credentials')) {
+                userMessage = 'Invalid email or password';
+            } else if (error.message.includes('User already registered')) {
+                userMessage = 'An account with this email already exists';
+            } else if (error.message.includes('Email not confirmed')) {
+                userMessage = 'Please check your email to confirm your account';
+            } else if (error.message.includes('JWT')) {
+                userMessage = 'Authentication service error. Please check your configuration.';
+            }
+            
+            throw new Error(userMessage);
         }
-
-        if (data.user) {
-            // Create user profile with referral system
-            const userData = {
-                id: data.user.id,
-                name: name,
-                email: email,
-                coins: 30, // Signup bonus
-                referral_code: this.generateReferralCode(name),
-                referred_by: referralCode || null
-            };
-
-            const { error: profileError } = await supabase
-                .from('users')
-                .insert([userData]);
-
-            if (profileError) {
-                console.error('Error creating user profile:', profileError);
-                throw profileError;
-            }
-
-            // Handle referral bonus if applicable
-            if (referralCode) {
-                await this.processReferralBonus(referralCode, data.user.id);
-            }
-
-            await this.loadUserProfile();
-        }
-
-        return data;
     }
 
     async signIn(email, password) {
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password
-        });
+        try {
+            if (!supabaseManager.isReady()) {
+                throw new Error('Database not ready. Please try again.');
+            }
 
-        if (error) {
-            throw error;
+            const result = await db.signIn(email, password);
+            return result;
+
+        } catch (error) {
+            console.error('Signin error:', error);
+            
+            let userMessage = error.message;
+            if (error.message.includes('Invalid login credentials')) {
+                userMessage = 'Invalid email or password';
+            } else if (error.message.includes('Email not confirmed')) {
+                userMessage = 'Please confirm your email before signing in';
+            }
+            
+            throw new Error(userMessage);
         }
-
-        return data;
     }
 
     async signOut() {
-        const { error } = await supabase.auth.signOut();
-        if (error) {
+        try {
+            await db.signOut();
+            this.currentUser = null;
+            this.userProfile = null;
+            this.onAuthStateChange(false);
+        } catch (error) {
+            console.error('Signout error:', error);
             throw error;
-        }
-    }
-
-    generateReferralCode(name) {
-        const randomNum = Math.floor(1000 + Math.random() * 9000);
-        return `SG-${name.substring(0, 3).toUpperCase()}-${randomNum}`;
-    }
-
-    async processReferralBonus(referralCode, newUserId) {
-        // Find inviter by referral code
-        const { data: inviter } = await supabase
-            .from('users')
-            .select('id')
-            .eq('referral_code', referralCode)
-            .single();
-
-        if (inviter) {
-            // Create referral record
-            await db.createReferral({
-                inviter_id: inviter.id,
-                invitee_id: newUserId,
-                bonus_coins: 50
-            });
-
-            // Add bonus coins to inviter
-            await db.updateUserCoins(inviter.id, 50);
         }
     }
 
@@ -178,6 +196,11 @@ class AuthManager {
 
     isAdmin() {
         return this.userProfile?.role === 'admin';
+    }
+
+    // Check if user is authenticated
+    isAuthenticated() {
+        return this.currentUser !== null;
     }
 }
 
