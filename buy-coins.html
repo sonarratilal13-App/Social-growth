@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Coins - Social Growth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --white: #ffffff;
+            --green: #10B981;
+            --dark-green: #059669;
+            --black: #111827;
+            --gray: #6B7280;
+            --light-gray: #F9FAFB;
+            --card-bg: rgba(255, 255, 255, 0.8);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--black);
+            background: linear-gradient(135deg, var(--white) 0%, var(--light-gray) 50%, var(--green) 100%);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .dashboard-header {
+            padding: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--black);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            margin-right: 8px;
+            font-size: 1.8rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .coin-balance {
+            background-color: var(--white);
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .coin-icon {
+            color: gold;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .buy-content {
+            margin-top: 30px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--black);
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--gray);
+            margin-bottom: 30px;
+        }
+
+        .coins-packages {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .package-card {
+            background-color: var(--card-bg);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .package-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .package-card.selected {
+            border-color: var(--green);
+            background: linear-gradient(135deg, var(--white) 0%, #F0FDF4 100%);
+        }
+
+        .package-icon {
+            font-size: 2.5rem;
+            color: var(--green);
+            margin-bottom: 15px;
+        }
+
+        .package-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .package-coins {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--green);
+            margin-bottom: 5px;
+        }
+
+        .package-price {
+            font-size: 1.2rem;
+            color: var(--black);
+            margin-bottom: 15px;
+        }
+
+        .package-bonus {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+
+        .manual-payment {
+            background-color: var(--card-bg);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .payment-method {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .upi-id {
+            background-color: #F0FDF4;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px dashed var(--green);
+        }
+
+        .upi-id code {
+            font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--black);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--black);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background-color: var(--green);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--dark-green);
+        }
+
+        .btn-primary:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background-color: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+
+        .alert-error {
+            background-color: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--white);
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--gray);
+            transition: color 0.3s;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--green);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .nav-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .payment-steps {
+            background-color: #F8FAFC;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 25px;
+        }
+
+        .payment-steps h4 {
+            margin-bottom: 15px;
+            color: var(--black);
+        }
+
+        .payment-steps ol {
+            padding-left: 20px;
+        }
+
+        .payment-steps li {
+            margin-bottom: 8px;
+            color: var(--gray);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .user-info {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .coins-packages {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-header container">
+        <a href="dashboard.html" class="logo">
+            <span class="logo-icon">🚀</span>
+            Social Growth
+        </a>
+        <div class="user-info">
+            <div class="coin-balance">
+                <i class="fas fa-coins coin-icon"></i>
+                <span id="coin-count">0</span>
+            </div>
+            <div class="user-avatar" id="user-avatar">
+                U
+            </div>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="buy-content container">
+        <h1 class="section-title">Buy Coins</h1>
+        <p class="subtitle">Purchase coins to boost your YouTube campaigns</p>
+
+        <div id="alert" class="alert"></div>
+
+        <div class="coins-packages">
+            <div class="package-card" data-amount="100" data-coins="1000" onclick="selectPackage(this)">
+                <div class="package-icon">💰</div>
+                <div class="package-name">Starter Pack</div>
+                <div class="package-coins">1,000 Coins</div>
+                <div class="package-price">₹100</div>
+                <div class="package-bonus">Perfect for small campaigns</div>
+            </div>
+
+            <div class="package-card" data-amount="500" data-coins="5000" onclick="selectPackage(this)">
+                <div class="package-icon">💎</div>
+                <div class="package-name">Pro Pack</div>
+                <div class="package-coins">5,000 Coins</div>
+                <div class="package-price">₹500</div>
+                <div class="package-bonus">Best value - Most popular</div>
+            </div>
+
+            <div class="package-card" data-amount="1000" data-coins="12000" onclick="selectPackage(this)">
+                <div class="package-icon">👑</div>
+                <div class="package-name">Premium Pack</div>
+                <div class="package-coins">12,000 Coins</div>
+                <div class="package-price">₹1,000</div>
+                <div class="package-bonus">+2,000 bonus coins</div>
+            </div>
+        </div>
+
+        <div class="manual-payment">
+            <h2 class="section-title">Manual Payment</h2>
+            <p class="subtitle">Make payment via UPI and submit transaction details</p>
+
+            <div class="payment-method">
+                <h3>UPI Payment Method</h3>
+                <p>Send payment to our UPI ID:</p>
+                <div class="upi-id">
+                    <code>sonarratilal@okicici</code>
+                </div>
+                <p>After payment, fill the form below with transaction details.</p>
+            </div>
+
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label for="selectedPackage">Selected Package</label>
+                    <input type="text" id="selectedPackage" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="amount">Amount Paid (₹)</label>
+                    <input type="number" id="amount" name="amount" min="10" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="referenceId">UPI Reference ID</label>
+                    <input type="text" id="referenceId" name="referenceId" placeholder="Enter UPI transaction reference" required>
+                    <div style="font-size: 0.85rem; color: var(--gray); margin-top: 5px;">
+                        Find this in your UPI app transaction history
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="transactionDate">Transaction Date & Time</label>
+                    <input type="datetime-local" id="transactionDate" name="transactionDate" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                    Submit Payment Request
+                </button>
+            </form>
+
+            <div class="payment-steps">
+                <h4>Payment Instructions:</h4>
+                <ol>
+                    <li>Open your UPI app (Google Pay, PhonePe, Paytm, etc.)</li>
+                    <li>Send payment to <strong>sonarratilal@okicici</strong></li>
+                    <li>Enter the exact amount for your selected package</li>
+                    <li>Take a screenshot of the successful payment</li>
+                    <li>Fill the form above with transaction details</li>
+                    <li>Click "Submit Payment Request"</li>
+                    <li>Our team will verify and credit coins within 24 hours</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item">
+            <i class="fas fa-home nav-icon"></i>
+            <span class="nav-label">Dashboard</span>
+        </a>
+        <a href="watch.html" class="nav-item">
+            <i class="fas fa-play-circle nav-icon"></i>
+            <span class="nav-label">Watch</span>
+        </a>
+        <a href="create-campaign.html" class="nav-item">
+            <i class="fas fa-plus-circle nav-icon"></i>
+            <span class="nav-label">Create</span>
+        </a>
+        <a href="buy-coins.html" class="nav-item active">
+            <i class="fas fa-shopping-cart nav-icon"></i>
+            <span class="nav-label">Buy Coins</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fas fa-user nav-icon"></i>
+            <span class="nav-label">Profile</span>
+        </a>
+    </nav>
+
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        let currentUser = null;
+        let selectedPackage = null;
+
+        // Check authentication
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (!session) {
+                window.location.href = 'login.html';
+            } else {
+                currentUser = session.user;
+                loadUserInfo();
+            }
+        });
+
+        async function loadUserInfo() {
+            if (!currentUser) return;
+
+            try {
+                const { data: userData, error } = await supabase
+                    .from('users')
+                    .select('coins, name')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                if (error) throw error;
+
+                document.getElementById('coin-count').textContent = userData.coins;
+                document.getElementById('user-avatar').textContent = userData.name ? userData.name.charAt(0).toUpperCase() : 'U';
+
+            } catch (error) {
+                console.error('Error loading user info:', error);
+            }
+        }
+
+        function selectPackage(packageElement) {
+            // Remove selected class from all packages
+            document.querySelectorAll('.package-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Add selected class to clicked package
+            packageElement.classList.add('selected');
+
+            // Store selected package data
+            selectedPackage = {
+                amount: packageElement.getAttribute('data-amount'),
+                coins: packageElement.getAttribute('data-coins'),
+                name: packageElement.querySelector('.package-name').textContent
+            };
+
+            // Update form
+            document.getElementById('selectedPackage').value = selectedPackage.name;
+            document.getElementById('amount').value = selectedPackage.amount;
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!selectedPackage) {
+                showAlert('Please select a package first', 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            const alert = document.getElementById('alert');
+            
+            // Get form values
+            const referenceId = document.getElementById('referenceId').value;
+            const transactionDate = document.getElementById('transactionDate').value;
+            
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
+            try {
+                // Create payment record
+                const { data: payment, error } = await supabase
+                    .from('payments')
+                    .insert([
+                        {
+                            user_id: currentUser.id,
+                            amount: parseFloat(selectedPackage.amount),
+                            coins_credited: parseInt(selectedPackage.coins),
+                            reference_id: referenceId,
+                            status: 'pending'
+                        }
+                    ])
+                    .select()
+                    .single();
+
+                if (error) throw error;
+                
+                // Create notification
+                await supabase
+                    .from('notifications')
+                    .insert([
+                        {
+                            user_id: currentUser.id,
+                            title: 'Payment Submitted',
+                            message: `Your payment of ₹${selectedPackage.amount} for ${selectedPackage.coins} coins has been submitted for review.`,
+                            type: 'info'
+                        }
+                    ]);
+                
+                showAlert('Payment request submitted successfully! We will verify and credit your coins within 24 hours.', 'success');
+                
+                // Reset form
+                document.getElementById('paymentForm').reset();
+                document.querySelectorAll('.package-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                selectedPackage = null;
+                document.getElementById('submitBtn').disabled = true;
+                
+            } catch (error) {
+                console.error('Error submitting payment:', error);
+                showAlert(error.message || 'An error occurred while submitting payment', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Payment Request';
+            }
+        });
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
