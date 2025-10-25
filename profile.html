@@ -570,79 +570,303 @@
                     return;
                 }
 
-                container.innerHTML = `
-                    <table class="history-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Amount</th>
-                                <th>Coins</th>
-                                <th>Reference ID</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${payments.map(payment => `
-                                <tr>
-                                    <td>${new Date(payment.timestamp).toLocaleDateString()}</td>
-                                    <td>₹${payment.amount}</td>
-                                    <td>${payment.coins_credited || 'Pending'}</td>
-                                    <td>${payment.reference_id}</td>
-                                    <td class="status-${payment.status}">${payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
+// In dashboard.html, replace the entire script section with this:
 
-            } catch (error) {
-                console.error('Error loading payment history:', error);
-            }
+<script>
+    // Initialize Supabase
+    const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    let currentUser = null;
+
+    // Check authentication
+    supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) {
+            window.location.href = 'login-fixed.html';
+        } else {
+            currentUser = session.user;
+            console.log('User logged in:', currentUser.id);
+            loadDashboardData();
         }
+    });
 
-        function copyReferralCode() {
+    async function loadDashboardData() {
+        if (!currentUser) return;
+
+        try {
+            console.log('Loading dashboard data...');
+            
+            // Load user data
+            const { data: userData, error: userError } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', currentUser.id)
+                .single();
+
+            if (userError) {
+                console.error('Error loading user data:', userError);
+                throw userError;
+            }
+
+            console.log('User data loaded:', userData);
+
+            // Update user info
+            document.getElementById('coin-count').textContent = userData.coins || 0;
+            document.getElementById('total-coins').textContent = userData.coins || 0;
+            document.getElementById('user-avatar').textContent = userData.name ? userData.name.charAt(0).toUpperCase() : 'U';
+            document.getElementById('referral-code').textContent = userData.referral_code || 'Not available';
+
+            // Load campaigns
+            await loadCampaigns('active');
+
+            // Load stats
+            await loadStats();
+
+            // Load notifications
+            await loadNotifications();
+
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+            showError('Failed to load dashboard data. Please refresh the page.');
+        }
+    }
+
+    async function loadCampaigns(status) {
+        if (!currentUser) return;
+
+        try {
+            const { data: campaigns, error } = await supabase
+                .from('campaigns')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .eq('status', status)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            const container = document.getElementById('campaigns-container');
+            
+            if (!campaigns || campaigns.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-video"></i>
+                        <h3>No ${status} campaigns</h3>
+                        <p>${status === 'active' ? 'Create your first campaign to get started!' : 'No completed campaigns yet.'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = campaigns.map(campaign => `
+                <div class="campaign-card">
+                    <div class="campaign-thumbnail">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                    <div class="campaign-info">
+                        <h3 class="campaign-title">${campaign.video_title || 'Untitled Campaign'}</h3>
+                        <div class="campaign-stats">
+                            <span>${campaign.current_intervals_completed}/${campaign.total_intervals} intervals</span>
+                            <span>${campaign.total_coins_spent || 0} coins spent</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: ${(campaign.current_intervals_completed / campaign.total_intervals) * 100}%"></div>
+                        </div>
+                        <div class="campaign-actions">
+                            <button class="btn btn-outline" onclick="viewCampaign('${campaign.id}')">View Details</button>
+                            ${status === 'active' ? `<button class="btn btn-primary" onclick="boostCampaign('${campaign.id}')">Boost</button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Error loading campaigns:', error);
+        }
+    }
+
+    async function loadStats() {
+        if (!currentUser) return;
+
+        try {
+            // Active campaigns count
+            const { count: activeCount } = await supabase
+                .from('campaigns')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', currentUser.id)
+                .eq('status', 'active');
+
+            document.getElementById('active-campaigns').textContent = activeCount || 0;
+
+            // Videos watched count
+            const { count: watchedCount } = await supabase
+                .from('watch_logs')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', currentUser.id);
+
+            document.getElementById('videos-watched').textContent = watchedCount || 0;
+
+            // Referrals count
+            const { count: referralsCount } = await supabase
+                .from('referrals')
+                .select('*', { count: 'exact', head: true })
+                .eq('inviter_id', currentUser.id);
+
+            document.getElementById('referrals-count').textContent = referralsCount || 0;
+            document.getElementById('referrals-count-stat').textContent = referralsCount || 0;
+
+            // Referral coins earned
+            const { data: referrals } = await supabase
+                .from('referrals')
+                .select('bonus_coins')
+                .eq('inviter_id', currentUser.id);
+
+            const totalReferralCoins = referrals ? referrals.reduce((sum, ref) => sum + ref.bonus_coins, 0) : 0;
+            document.getElementById('referral-coins').textContent = totalReferralCoins;
+
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    }
+
+    async function loadNotifications() {
+        if (!currentUser) return;
+
+        try {
+            const { data: notifications, error } = await supabase
+                .from('notifications')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .order('timestamp', { ascending: false })
+                .limit(10);
+
+            if (error) throw error;
+
+            const container = document.getElementById('notifications-container');
+            
+            if (!notifications || notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-bell"></i>
+                        <h3>No notifications</h3>
+                        <p>You're all caught up!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = notifications.map(notification => `
+                <div class="notification">
+                    <div class="notification-icon">
+                        <i class="fas fa-${getNotificationIcon(notification.type)}"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h4>${notification.title}</h4>
+                        <p>${notification.message}</p>
+                        <div class="notification-time">${formatTime(notification.timestamp)}</div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+        }
+    }
+
+    function getNotificationIcon(type) {
+        const icons = {
+            'success': 'check-circle',
+            'error': 'exclamation-circle',
+            'info': 'info-circle',
+            'warning': 'exclamation-triangle'
+        };
+        return icons[type] || 'bell';
+    }
+
+    function formatTime(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return date.toLocaleDateString();
+    }
+
+    // Tab functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.tab');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                tabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                const tabType = this.getAttribute('data-tab');
+                loadCampaigns(tabType);
+            });
+        });
+
+        // Copy referral code
+        document.getElementById('copy-referral-btn').addEventListener('click', function() {
             const referralCode = document.getElementById('referral-code').textContent;
-            const referralLink = `${window.location.origin}/signup.html?ref=${referralCode}`;
+            if (referralCode === 'Not available') {
+                alert('Referral code not available yet. Please refresh the page.');
+                return;
+            }
+            
+            const referralLink = `${window.location.origin}/signup-fixed.html?ref=${referralCode}`;
             
             navigator.clipboard.writeText(referralLink)
                 .then(() => {
-                    showAlert('Referral link copied to clipboard!', 'success');
+                    const originalText = this.textContent;
+                    this.textContent = 'Copied!';
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                    }, 2000);
                 })
                 .catch(err => {
                     console.error('Failed to copy: ', err);
+                    alert('Failed to copy referral link. Please copy it manually.');
                 });
-        }
+        });
+    });
 
-        function shareReferral() {
-            const referralCode = document.getElementById('referral-code').textContent;
-            const referralLink = `${window.location.origin}/signup.html?ref=${referralCode}`;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Join Social Growth',
-                    text: 'Earn coins by watching YouTube videos! Use my referral code:',
-                    url: referralLink
-                });
-            } else {
-                copyReferralCode();
-            }
-        }
+    function viewCampaign(campaignId) {
+        alert('Campaign details feature coming soon!');
+    }
 
-        function showAlert(message, type) {
-            const alert = document.getElementById('alert');
-            alert.textContent = message;
-            alert.className = `alert alert-${type}`;
-            alert.style.display = 'block';
-            
-            setTimeout(() => {
-                alert.style.display = 'none';
-            }, 3000);
-        }
+    function boostCampaign(campaignId) {
+        alert('Campaign boost feature coming soon!');
+    }
 
-        async function logout() {
-            await supabase.auth.signOut();
-            window.location.href = 'index.html';
-        }
-    </script>
+    function showError(message) {
+        const container = document.createElement('div');
+        container.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #FEE2E2;
+            color: #991B1B;
+            padding: 12px;
+            border-radius: 8px;
+            z-index: 10000;
+            max-width: 300px;
+        `;
+        container.textContent = message;
+        document.body.appendChild(container);
+        
+        setTimeout(() => {
+            document.body.removeChild(container);
+        }, 5000);
+    }
+
+    async function logout() {
+        await supabase.auth.signOut();
+        window.location.href = 'index.html';
+    }
+</script>
 </body>
 </html>
