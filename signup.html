@@ -227,6 +227,13 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+        // Check if user is already logged in
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                window.location.href = 'dashboard.html';
+            }
+        });
+
         document.getElementById('signupForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -260,8 +267,7 @@
                     password: password,
                     options: {
                         data: {
-                            name: name,
-                            referral_code: userReferralCode
+                            name: name
                         }
                     }
                 });
@@ -269,6 +275,9 @@
                 if (authError) throw authError;
                 
                 if (authData.user) {
+                    // Wait a moment for the user to be available in the database
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
                     // Create user profile in database
                     const { error: dbError } = await supabase
                         .from('users')
@@ -282,37 +291,49 @@
                             }
                         ]);
                     
-                    if (dbError) throw dbError;
+                    if (dbError) {
+                        // If user creation fails, delete the auth user
+                        await supabase.auth.signOut();
+                        throw dbError;
+                    }
                     
                     // Handle referral bonus if referral code provided
                     if (referralCode) {
-                        // Find user with this referral code
-                        const { data: referrerData, error: referrerError } = await supabase
-                            .from('users')
-                            .select('id')
-                            .eq('referral_code', referralCode)
-                            .single();
-                            
-                        if (referrerData) {
-                            // Update new user's referred_by field
-                            await supabase
+                        try {
+                            // Find user with this referral code
+                            const { data: referrerData, error: referrerError } = await supabase
                                 .from('users')
-                                .update({ referred_by: referrerData.id })
-                                .eq('id', authData.user.id);
+                                .select('id')
+                                .eq('referral_code', referralCode)
+                                .single();
                                 
-                            // Create referral record
-                            await supabase
-                                .from('referrals')
-                                .insert([
-                                    {
-                                        inviter_id: referrerData.id,
-                                        invitee_id: authData.user.id,
-                                        bonus_coins: 50
-                                    }
-                                ]);
-                                
-                            // Add bonus coins to inviter (will be credited when invitee watches first campaign)
-                            // This will be handled when the invitee completes their first watch
+                            if (referrerData && referrerData.id !== authData.user.id) {
+                                // Update new user's referred_by field
+                                await supabase
+                                    .from('users')
+                                    .update({ referred_by: referrerData.id })
+                                    .eq('id', authData.user.id);
+                                    
+                                // Create referral record
+                                await supabase
+                                    .from('referrals')
+                                    .insert([
+                                        {
+                                            inviter_id: referrerData.id,
+                                            invitee_id: authData.user.id,
+                                            bonus_coins: 50
+                                        }
+                                    ]);
+                                    
+                                // Add bonus coins to inviter
+                                await supabase.rpc('increment_coins', {
+                                    user_id: referrerData.id,
+                                    coin_increment: 50
+                                });
+                            }
+                        } catch (referralError) {
+                            console.error('Referral error:', referralError);
+                            // Continue with signup even if referral fails
                         }
                     }
                     
@@ -326,7 +347,16 @@
                 
             } catch (error) {
                 console.error('Signup error:', error);
-                showAlert(error.message || 'An error occurred during signup', 'error');
+                let errorMessage = error.message || 'An error occurred during signup';
+                
+                // Handle specific error cases
+                if (error.message.includes('already registered')) {
+                    errorMessage = 'This email is already registered. Please try logging in instead.';
+                } else if (error.message.includes('password_hash')) {
+                    errorMessage = 'Database configuration error. Please contact support.';
+                }
+                
+                showAlert(errorMessage, 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Create Account';
