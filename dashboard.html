@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Social Growth</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="supabase.js" defer></script>
+    <script src="auth.js" defer></script>
+    <style>
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--green) 0%, var(--dark-green) 100%);
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Dashboard Content */
+        .dashboard-content {
+            padding: 2rem 0;
+        }
+
+        /* Balance Card */
+        .balance-card {
+            background: linear-gradient(135deg, var(--white) 0%, var(--light-green) 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .balance-info h2 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .balance-amount {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--black);
+            line-height: 1;
+        }
+
+        .balance-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--black);
+        }
+
+        .view-all {
+            color: var(--green);
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Campaigns Grid */
+        .campaigns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .campaign-card {
+            background: var(--white);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .campaign-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .campaign-image {
+            height: 160px;
+            background: linear-gradient(135deg, var(--light-green), var(--green));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .campaign-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0,0,0,0.1), transparent);
+        }
+
+        .campaign-info {
+            padding: 1.5rem;
+        }
+
+        .campaign-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--black);
+        }
+
+        .campaign-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .progress-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--light-gray);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--green), var(--dark-green));
+            border-radius: 10px;
+        }
+
+        .campaign-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .action-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .action-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--light-green), var(--green));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .action-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--black);
+        }
+
+        .action-description {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Referral Section */
+        .referral-section {
+            background: linear-gradient(135deg, var(--white) 0%, var(--light-green) 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .referral-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--black);
+            font-weight: 700;
+        }
+
+        .referral-info p {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+            max-width: 500px;
+        }
+
+        .referral-code {
+            background: var(--white);
+            border: 2px dashed var(--green);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--black);
+            display: inline-block;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--light-green), var(--green));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--black);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .balance-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1.5rem;
+            }
+
+            .balance-actions {
+                width: 100%;
+            }
+
+            .btn {
+                flex: 1;
+                text-align: center;
+            }
+
+            .referral-section {
+                flex-direction: column;
+                gap: 1.5rem;
+                text-align: center;
+            }
+
+            .campaigns-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .user-info span {
+                display: none;
+            }
+
+            .balance-amount {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="container header-content">
+            <a href="dashboard.html" class="logo">
+                <span class="logo-icon">📈</span>
+                Social Growth
+            </a>
+            <div class="user-info">
+                <span data-user-name>Loading...</span>
+                <div class="user-avatar" data-user-avatar>U</div>
+                <button class="btn btn-outline btn-small" onclick="handleLogout()" style="background: rgba(255,255,255,0.2); color: white; border-color: white;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dashboard Content -->
+    <div class="container dashboard-content">
+        <!-- Balance Card -->
+        <div class="balance-card fade-in">
+            <div class="balance-info">
+                <h2>Your Coin Balance</h2>
+                <div class="balance-amount" id="coinBalance">0</div>
+            </div>
+            <div class="balance-actions">
+                <button class="btn btn-primary" onclick="showBuyCoinsModal()">
+                    <i class="fas fa-shopping-cart"></i> Buy Coins
+                </button>
+                <a href="create-campaign.html" class="btn btn-outline">
+                    <i class="fas fa-plus"></i> Create Campaign
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+                <div class="stat-number" id="activeCampaigns">0</div>
+                <div class="stat-label">Active Campaigns</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <div class="stat-number" id="totalWatches">0</div>
+                <div class="stat-label">Videos Watched</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-number" id="totalReferrals">0</div>
+                <div class="stat-label">Referrals</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div class="stat-number" id="totalEarned">0</div>
+                <div class="stat-label">Coins Earned</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section-header">
+            <h2 class="section-title">Quick Actions</h2>
+        </div>
+        
+        <div class="quick-actions">
+            <div class="action-card fade-in" onclick="navigateToWatch()">
+                <div class="action-icon">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <div class="action-title">Watch Videos</div>
+                <div class="action-description">Earn 3 coins every 30 seconds</div>
+            </div>
+            
+            <div class="action-card fade-in" onclick="window.location.href='create-campaign.html'">
+                <div class="action-icon">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <div class="action-title">Create Campaign</div>
+                <div class="action-description">Boost your YouTube videos</div>
+            </div>
+            
+            <div class="action-card fade-in" onclick="showReferralsModal()">
+                <div class="action-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="action-title">Refer Friends</div>
+                <div class="action-description">Earn 50 coins per referral</div>
+            </div>
+            
+            <div class="action-card fade-in" onclick="showAnalytics()">
+                <div class="action-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="action-title">Analytics</div>
+                <div class="action-description">View your performance</div>
+            </div>
+        </div>
+
+        <!-- Active Campaigns -->
+        <div class="section-header">
+            <h2 class="section-title">Active Campaigns</h2>
+            <a href="#" class="view-all" onclick="viewAllCampaigns()">
+                View All <i class="fas fa-chevron-right"></i>
+            </a>
+        </div>
+        
+        <div class="campaigns-grid" id="activeCampaignsGrid">
+            <!-- Campaigns will be loaded here -->
+            <div class="text-center p-3">
+                <div class="spinner"></div>
+                <p>Loading campaigns...</p>
+            </div>
+        </div>
+
+        <!-- Referral Section -->
+        <div class="referral-section fade-in">
+            <div class="referral-info">
+                <h3>Invite Friends & Earn More</h3>
+                <p>Share your referral code and get 50 coins when your friends join and watch their first campaign.</p>
+                <div class="referral-code" id="userReferralCode">Loading...</div>
+            </div>
+            <button class="btn btn-primary" onclick="shareReferral()">
+                <i class="fas fa-share-alt"></i> Share Code
+            </button>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="section-header">
+            <h2 class="section-title">Recent Activity</h2>
+        </div>
+        
+        <div class="card">
+            <div id="recentActivity">
+                <div class="text-center p-3">
+                    <div class="spinner"></div>
+                    <p>Loading activity...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item active">
+            <div class="nav-icon"><i class="fas fa-home"></i></div>
+            <div class="nav-label">Home</div>
+        </a>
+        <a href="watch.html" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-eye"></i></div>
+            <div class="nav-label">Watch</div>
+        </a>
+        <a href="create-campaign.html" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-rocket"></i></div>
+            <div class="nav-label">Create</div>
+        </a>
+        <a href="#" class="nav-item" onclick="showProfileModal()">
+            <div class="nav-icon"><i class="fas fa-user"></i></div>
+            <div class="nav-label">Profile</div>
+        </a>
+    </nav>
+
+    <!-- Buy Coins Modal -->
+    <div class="modal" id="buyCoinsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Buy Coins</h3>
+                <button class="modal-close" onclick="hideModal('buyCoinsModal')">&times;</button>
+            </div>
+            <form onsubmit="handleCoinPurchase(event)">
+                <div class="form-group">
+                    <label class="form-label">Select Package</label>
+                    <div class="coin-packages">
+                        <div class="coin-package card p-2 mb-2" onclick="selectPackage(100, 10)">
+                            <div class="d-flex justify-between align-center">
+                                <div>
+                                    <h4>100 Coins</h4>
+                                    <p>₹10</p>
+                                </div>
+                                <i class="fas fa-check-circle" style="color: var(--green); display: none;"></i>
+                            </div>
+                        </div>
+                        <div class="coin-package card p-2 mb-2" onclick="selectPackage(500, 50)">
+                            <div class="d-flex justify-between align-center">
+                                <div>
+                                    <h4>500 Coins</h4>
+                                    <p>₹50</p>
+                                </div>
+                                <i class="fas fa-check-circle" style="color: var(--green); display: none;"></i>
+                            </div>
+                        </div>
+                        <div class="coin-package card p-2" onclick="selectPackage(1200, 100)">
+                            <div class="d-flex justify-between align-center">
+                                <div>
+                                    <h4>1200 Coins</h4>
+                                    <p>₹100</p>
+                                </div>
+                                <i class="fas fa-check-circle" style="color: var(--green); display: none;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="referenceId">UPI Reference ID</label>
+                    <input type="text" class="form-input" id="referenceId" required placeholder="Enter UPI transaction reference">
+                </div>
+                <div class="form-group">
+                    <p class="referral-field">
+                        <strong>UPI ID:</strong> sonarratilal@okicici<br>
+                        <strong>Amount:</strong> ₹<span id="selectedAmount">0</span><br>
+                        <strong>Coins:</strong> <span id="selectedCoins">0</span>
+                    </p>
+                </div>
+                <button type="submit" class="btn btn-filled w-100">
+                    <i class="fas fa-paper-plane"></i> Submit Payment Request
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification System -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        let selectedPackage = { coins: 0, amount: 0 };
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadDashboardData();
+            
+            // Set up real-time subscription for user profile updates
+            const user = authManager.getCurrentUser();
+            if (user) {
+                const subscription = supabase
+                    .channel('user_changes')
+                    .on('postgres_changes', 
+                        { 
+                            event: 'UPDATE', 
+                            schema: 'public', 
+                            table: 'users',
+                            filter: `id=eq.${user.id}`
+                        }, 
+                        async (payload) => {
+                            await loadDashboardData();
+                        }
+                    )
+                    .subscribe();
+            }
+        });
+
+        async function loadDashboardData() {
+            const user = authManager.getCurrentUser();
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                // Load user profile and balance
+                const profile = authManager.getUserProfile();
+                if (profile) {
+                    document.getElementById('coinBalance').textContent = profile.coins || 0;
+                    document.getElementById('userReferralCode').textContent = profile.referral_code || 'Not available';
+                }
+
+                // Load user campaigns
+                const { data: campaigns } = await db.getUserCampaigns(user.id);
+                const activeCampaigns = campaigns?.filter(c => c.status === 'active') || [];
+                document.getElementById('activeCampaigns').textContent = activeCampaigns.length;
+
+                // Display active campaigns
+                displayActiveCampaigns(activeCampaigns);
+
+                // Load user stats
+                const { data: watchLogs } = await db.getUserWatchLogs(user.id);
+                const totalWatches = watchLogs?.length || 0;
+                const totalEarned = watchLogs?.reduce((sum, log) => sum + log.coins_earned, 0) || 0;
+                
+                document.getElementById('totalWatches').textContent = totalWatches;
+                document.getElementById('totalEarned').textContent = totalEarned;
+
+                // Load referrals
+                const { data: referrals } = await db.getUserReferrals(user.id);
+                document.getElementById('totalReferrals').textContent = referrals?.length || 0;
+
+                // Load recent activity
+                displayRecentActivity(watchLogs);
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showNotification('Error loading dashboard data', 'error');
+            }
+        }
+
+        function displayActiveCampaigns(campaigns) {
+            const grid = document.getElementById('activeCampaignsGrid');
+            
+            if (!campaigns || campaigns.length === 0) {
+                grid.innerHTML = `
+                    <div class="text-center p-3">
+                        <i class="fas fa-video" style="font-size: 3rem; color: var(--gray); margin-bottom: 1rem;"></i>
+                        <h3>No Active Campaigns</h3>
+                        <p>Create your first campaign to get started!</p>
+                        <a href="create-campaign.html" class="btn btn-filled mt-2">
+                            <i class="fas fa-plus"></i> Create Campaign
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = campaigns.map(campaign => `
+                <div class="campaign-card">
+                    <div class="campaign-image">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                    <div class="campaign-info">
+                        <div class="campaign-title">${campaign.video_url ? 'YouTube Campaign' : 'Untitled Campaign'}</div>
+                        <div class="campaign-stats">
+                            <span>Coins: ${campaign.total_intervals * 3}</span>
+                            <span>Progress: ${Math.round((campaign.current_intervals_completed / campaign.total_intervals) * 100)}%</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>Completion</span>
+                                <span>${Math.round((campaign.current_intervals_completed / campaign.total_intervals) * 100)}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: ${(campaign.current_intervals_completed / campaign.total_intervals) * 100}%"></div>
+                            </div>
+                        </div>
+                        <div class="campaign-actions">
+                            <button class="btn btn-primary btn-small" onclick="viewCampaign('${campaign.id}')">View Details</button>
+                            <button class="btn btn-outline btn-small" onclick="pauseCampaign('${campaign.id}')">Pause</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function displayRecentActivity(watchLogs) {
+            const container = document.getElementById('recentActivity');
+            
+            if (!watchLogs || watchLogs.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-3">
+                        <i class="fas fa-history" style="font-size: 3rem; color: var(--gray); margin-bottom: 1rem;"></i>
+                        <p>No recent activity</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const recentItems = watchLogs.slice(0, 5).map(log => `
+                <div class="d-flex justify-between align-center p-2" style="border-bottom: 1px solid var(--light-gray);">
+                    <div>
+                        <strong>+${log.coins_earned} coins</strong>
+                        <p style="margin: 0; color: var(--gray); font-size: 0.9rem;">
+                            Watched campaign video
+                        </p>
+                    </div>
+                    <div style="color: var(--gray); font-size: 0.9rem;">
+                        ${new Date(log.timestamp).toLocaleDateString()}
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = recentItems;
+        }
+
+        function selectPackage(coins, amount) {
+            selectedPackage = { coins, amount };
+            
+            // Update UI
+            document.querySelectorAll('.coin-package').forEach(pkg => {
+                pkg.style.border = '2px solid transparent';
+                pkg.querySelector('.fa-check-circle').style.display = 'none';
+            });
+            
+            event.currentTarget.style.border = '2px solid var(--green)';
+            event.currentTarget.querySelector('.fa-check-circle').style.display = 'block';
+            
+            document.getElementById('selectedCoins').textContent = coins;
+            document.getElementById('selectedAmount').textContent = amount;
+        }
+
+        async function handleCoinPurchase(event) {
+            event.preventDefault();
+            
+            if (selectedPackage.coins === 0) {
+                showNotification('Please select a coin package', 'error');
+                return;
+            }
+
+            const referenceId = document.getElementById('referenceId').value;
+            const user = authManager.getCurrentUser();
+
+            try {
+                await db.createPaymentRequest({
+                    user_id: user.id,
+                    amount: selectedPackage.amount,
+                    reference_id: referenceId,
+                    status: 'pending',
+                    coins: selectedPackage.coins
+                });
+
+                hideModal('buyCoinsModal');
+                showNotification('Payment request submitted! It will be processed within 24 hours.', 'success');
+                
+                // Reset form
+                document.getElementById('referenceId').value = '';
+                selectedPackage = { coins: 0, amount: 0 };
+                document.querySelectorAll('.coin-package').forEach(pkg => {
+                    pkg.style.border = '2px solid transparent';
+                    pkg.querySelector('.fa-check-circle').style.display = 'none';
+                });
+
+            } catch (error) {
+                showNotification('Error submitting payment request: ' + error.message, 'error');
+            }
+        }
+
+        function showBuyCoinsModal() {
+            showModal('buyCoinsModal');
+        }
+
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function navigateToWatch() {
+            window.location.href = 'watch.html';
+        }
+
+        async function handleLogout() {
+            try {
+                await authManager.signOut();
+                window.location.href = 'index.html';
+            } catch (error) {
+                showNotification('Error during logout', 'error');
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        // Close modals when clicking outside
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
