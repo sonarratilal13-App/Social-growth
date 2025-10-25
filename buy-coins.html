@@ -552,72 +552,83 @@
         }
 
         document.getElementById('paymentForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            if (!selectedPackage) {
-                showAlert('Please select a package first', 'error');
-                return;
-            }
+    e.preventDefault();
+    
+    if (!selectedPackage) {
+        showAlert('Please select a package first', 'error');
+        return;
+    }
 
-            const submitBtn = document.getElementById('submitBtn');
-            const alert = document.getElementById('alert');
+    const submitBtn = document.getElementById('submitBtn');
+    const alert = document.getElementById('alert');
+    
+    // Get form values
+    const referenceId = document.getElementById('referenceId').value;
+    const transactionDate = document.getElementById('transactionDate').value;
+    
+    // Disable submit button
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+    
+    try {
+        // Verify user exists
+        const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('id', currentUser.id)
+            .single();
             
-            // Get form values
-            const referenceId = document.getElementById('referenceId').value;
-            const transactionDate = document.getElementById('transactionDate').value;
-            
-            // Disable submit button
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Submitting...';
-            
-            try {
-                // Create payment record
-                const { data: payment, error } = await supabase
-                    .from('payments')
-                    .insert([
-                        {
-                            user_id: currentUser.id,
-                            amount: parseFloat(selectedPackage.amount),
-                            coins_credited: parseInt(selectedPackage.coins),
-                            reference_id: referenceId,
-                            status: 'pending'
-                        }
-                    ])
-                    .select()
-                    .single();
+        if (userError || !userData) {
+            throw new Error('User not found. Please log in again.');
+        }
+        
+        // Create payment record
+        const { data: payment, error } = await supabase
+            .from('payments')
+            .insert([
+                {
+                    user_id: currentUser.id,
+                    amount: parseFloat(selectedPackage.amount),
+                    coins_credited: parseInt(selectedPackage.coins),
+                    reference_id: referenceId,
+                    status: 'pending'
+                }
+            ])
+            .select()
+            .single();
 
-                if (error) throw error;
-                
-                // Create notification
-                await supabase
-                    .from('notifications')
-                    .insert([
-                        {
-                            user_id: currentUser.id,
-                            title: 'Payment Submitted',
-                            message: `Your payment of ₹${selectedPackage.amount} for ${selectedPackage.coins} coins has been submitted for review.`,
-                            type: 'info'
-                        }
-                    ]);
-                
-                showAlert('Payment request submitted successfully! We will verify and credit your coins within 24 hours.', 'success');
-                
-                // Reset form
-                document.getElementById('paymentForm').reset();
-                document.querySelectorAll('.package-card').forEach(card => {
-                    card.classList.remove('selected');
-                });
-                selectedPackage = null;
-                document.getElementById('submitBtn').disabled = true;
-                
-            } catch (error) {
-                console.error('Error submitting payment:', error);
-                showAlert(error.message || 'An error occurred while submitting payment', 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Submit Payment Request';
-            }
+        if (error) throw error;
+        
+        // Create notification
+        await supabase
+            .from('notifications')
+            .insert([
+                {
+                    user_id: currentUser.id,
+                    title: 'Payment Submitted',
+                    message: `Your payment of ₹${selectedPackage.amount} for ${selectedPackage.coins} coins has been submitted for review.`,
+                    type: 'info'
+                }
+            ]);
+        
+        showAlert('Payment request submitted successfully! We will verify and credit your coins within 24 hours.', 'success');
+        
+        // Reset form
+        document.getElementById('paymentForm').reset();
+        document.querySelectorAll('.package-card').forEach(card => {
+            card.classList.remove('selected');
         });
+        selectedPackage = null;
+        document.getElementById('submitBtn').disabled = true;
+        
+    } catch (error) {
+        console.error('Error submitting payment:', error);
+        showAlert(error.message || 'An error occurred while submitting payment', 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Payment Request';
+    }
+});
         
         function showAlert(message, type) {
             const alert = document.getElementById('alert');
