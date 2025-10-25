@@ -210,6 +210,13 @@
             justify-content: center;
             color: var(--white);
             font-size: 3rem;
+            overflow: hidden;
+        }
+
+        .campaign-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .campaign-info {
@@ -644,6 +651,14 @@
             }
         }
 
+        // YouTube video ID extract function
+        function extractYouTubeVideoId(url) {
+            if (!url) return null;
+            const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[7].length === 11) ? match[7] : null;
+        }
+
         async function loadCampaigns(status) {
             if (!currentUser) return;
 
@@ -670,27 +685,36 @@
                     return;
                 }
 
-                container.innerHTML = campaigns.map(campaign => `
-                    <div class="campaign-card">
-                        <div class="campaign-thumbnail">
-                            <i class="fas fa-play-circle"></i>
+                container.innerHTML = campaigns.map(campaign => {
+                    // Extract YouTube video ID from URL
+                    const videoId = extractYouTubeVideoId(campaign.video_url);
+                    const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
+                    
+                    return `
+                        <div class="campaign-card">
+                            <div class="campaign-thumbnail">
+                                ${thumbnailUrl ? 
+                                    `<img src="${thumbnailUrl}" alt="${campaign.video_title}" style="width: 100%; height: 100%; object-fit: cover;">` :
+                                    `<i class="fab fa-youtube"></i>`
+                                }
+                            </div>
+                            <div class="campaign-info">
+                                <h3 class="campaign-title">${campaign.video_title || 'Untitled Campaign'}</h3>
+                                <div class="campaign-stats">
+                                    <span>${campaign.current_intervals_completed}/${campaign.total_intervals} intervals</span>
+                                    <span>${campaign.total_coins_spent || 0} coins spent</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: ${(campaign.current_intervals_completed / campaign.total_intervals) * 100}%"></div>
+                                </div>
+                                <div class="campaign-actions">
+                                    <button class="btn btn-outline" onclick="viewCampaign('${campaign.id}')">View Details</button>
+                                    ${status === 'active' ? `<button class="btn btn-primary" onclick="boostCampaign('${campaign.id}')">Boost</button>` : ''}
+                                </div>
+                            </div>
                         </div>
-                        <div class="campaign-info">
-                            <h3 class="campaign-title">${campaign.video_title || 'Untitled Campaign'}</h3>
-                            <div class="campaign-stats">
-                                <span>${campaign.current_intervals_completed}/${campaign.total_intervals} intervals</span>
-                                <span>${campaign.total_coins_spent || 0} coins spent</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress" style="width: ${(campaign.current_intervals_completed / campaign.total_intervals) * 100}%"></div>
-                            </div>
-                            <div class="campaign-actions">
-                                <button class="btn btn-outline" onclick="viewCampaign('${campaign.id}')">View Details</button>
-                                ${status === 'active' ? `<button class="btn btn-primary" onclick="boostCampaign('${campaign.id}')">Boost</button>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             } catch (error) {
                 console.error('Error loading campaigns:', error);
             }
