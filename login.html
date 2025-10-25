@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Social Growth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --white: #ffffff;
+            --green: #10B981;
+            --dark-green: #059669;
+            --black: #111827;
+            --gray: #6B7280;
+            --light-gray: #F9FAFB;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--black);
+            background: linear-gradient(135deg, var(--white) 0%, var(--light-gray) 50%, var(--green) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background-color: var(--white);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: var(--black);
+            margin-bottom: 30px;
+        }
+
+        .logo-icon {
+            margin-right: 10px;
+            font-size: 2rem;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--black);
+            font-weight: 600;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--gray);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--black);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background-color: var(--green);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--dark-green);
+        }
+
+        .btn-primary:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 25px;
+            color: var(--gray);
+        }
+
+        .signup-link a {
+            color: var(--green);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background-color: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+
+        .alert-error {
+            background-color: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+
+        .admin-login {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .admin-login a {
+            color: var(--gray);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .admin-login a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">
+            <span class="logo-icon">🚀</span>
+            Social Growth
+        </div>
+        
+        <h1>Welcome Back</h1>
+        <p class="subtitle">Sign in to your Social Growth account</p>
+
+        <div id="alert" class="alert"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                Sign In
+            </button>
+        </form>
+
+        <div class="signup-link">
+            Don't have an account? <a href="signup.html">Create one here</a>
+        </div>
+
+        <div class="admin-login">
+            <a href="admin-login.html">Admin Login</a>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Check if user is already logged in
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                window.location.href = 'dashboard.html';
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const alert = document.getElementById('alert');
+            
+            // Get form values
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing In...';
+            
+            try {
+                // Sign in user with Supabase Auth
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) throw error;
+                
+                if (data.user) {
+                    // Check if user is admin
+                    const { data: userData, error: userError } = await supabase
+                        .from('users')
+                        .select('is_admin')
+                        .eq('id', data.user.id)
+                        .single();
+                    
+                    if (userError) throw userError;
+                    
+                    // Handle daily login bonus and streak
+                    await handleLoginBonus(data.user.id);
+                    
+                    // Redirect based on user role
+                    if (userData.is_admin) {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                showAlert(error.message || 'Invalid email or password', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In';
+            }
+        });
+        
+        async function handleLoginBonus(userId) {
+            try {
+                // Get user's last login date
+                const { data: userData, error } = await supabase
+                    .from('users')
+                    .select('last_login, login_streak, coins')
+                    .eq('id', userId)
+                    .single();
+                
+                if (error) throw error;
+                
+                const lastLogin = new Date(userData.last_login);
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                let newStreak = userData.login_streak;
+                let bonusCoins = 0;
+                
+                // Check if user logged in yesterday (maintain streak)
+                if (lastLogin.toDateString() === yesterday.toDateString()) {
+                    newStreak += 1;
+                } else if (lastLogin.toDateString() !== today.toDateString()) {
+                    // Reset streak if not consecutive
+                    newStreak = 1;
+                }
+                
+                // Daily login bonus (only if not already logged in today)
+                if (lastLogin.toDateString() !== today.toDateString()) {
+                    bonusCoins += 10; // Daily bonus
+                    
+                    // Streak bonus
+                    if (newStreak >= 7) {
+                        bonusCoins += 50; // 7-day streak bonus
+                    }
+                    
+                    // Update user coins and streak
+                    await supabase
+                        .from('users')
+                        .update({
+                            coins: userData.coins + bonusCoins,
+                            login_streak: newStreak,
+                            last_login: today.toISOString()
+                        })
+                        .eq('id', userId);
+                    
+                    // Create notification for bonus
+                    if (bonusCoins > 0) {
+                        await supabase
+                            .from('notifications')
+                            .insert([
+                                {
+                                    user_id: userId,
+                                    title: 'Login Bonus!',
+                                    message: `You received ${bonusCoins} coins as daily login bonus!`,
+                                    type: 'success'
+                                }
+                            ]);
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error handling login bonus:', error);
+            }
+        }
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
