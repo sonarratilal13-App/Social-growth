@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Growth - Boost Your YouTube Watch Time</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="supabase.js" defer></script>
+    <script src="auth.js" defer></script>
+    <style>
+        /* Hero Section */
+        .hero {
+            padding: 12rem 0 8rem;
+            background: linear-gradient(135deg, var(--white) 0%, var(--light-green) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 70%;
+            height: 200%;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(4, 120, 87, 0.05) 100%);
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-text {
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--black) 0%, var(--dark-green) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--gray);
+            margin-bottom: 2.5rem;
+            max-width: 90%;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .stat-icon {
+            width: 3rem;
+            height: 3rem;
+            background: linear-gradient(135deg, var(--green), var(--dark-green));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .stat-text h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-text p {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin: 0;
+        }
+
+        .hero-visual {
+            position: relative;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .visual-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .visual-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .visual-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .visual-balance {
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--light-gray);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--green), var(--dark-green));
+            border-radius: 10px;
+            width: 65%;
+        }
+
+        .campaign-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .campaign-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .campaign-item:hover {
+            background: var(--light-green);
+        }
+
+        .campaign-thumb {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--light-green), var(--green));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .campaign-info h4 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .campaign-info p {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin: 0;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 8rem 0;
+            background: var(--white);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--black) 0%, var(--dark-green) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .section-title p {
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--light-green), var(--green));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--black);
+        }
+
+        .feature-card p {
+            color: var(--gray);
+        }
+
+        /* How It Works Section */
+        .how-it-works {
+            padding: 8rem 0;
+            background: linear-gradient(135deg, var(--light-green) 0%, var(--white) 100%);
+        }
+
+        .steps-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+        }
+
+        .step {
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--green), var(--dark-green));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--black);
+        }
+
+        .step p {
+            color: var(--gray);
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 8rem 0;
+            background: linear-gradient(135deg, var(--green) 0%, var(--dark-green) 100%);
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -20%;
+            width: 70%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta h2 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+        }
+
+        .cta p {
+            font-size: 1.2rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.9;
+        }
+
+        .cta .btn {
+            background: white;
+            color: var(--green);
+            font-weight: 700;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+        }
+
+        .cta .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Auth Modals */
+        .auth-modal {
+            display: none;
+        }
+
+        .auth-modal.show {
+            display: flex;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            background: none;
+            border: none;
+            font-weight: 600;
+            color: var(--gray);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .auth-tab.active {
+            color: var(--green);
+            border-bottom: 3px solid var(--green);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .referral-field {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--light-green);
+            border-radius: 8px;
+            border-left: 4px solid var(--green);
+        }
+
+        @media (max-width: 968px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+
+            .hero p {
+                max-width: 100%;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+
+            .hero-stats {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 250px;
+            }
+
+            .cta h2 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container nav-container">
+            <a href="#" class="logo">
+                <span class="logo-icon">📈</span>
+                Social Growth
+            </a>
+            <nav class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#about">About</a>
+            </nav>
+            <div class="auth-buttons">
+                <button class="btn btn-outline" data-auth="unauthenticated" onclick="showAuthModal('login')">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <button class="btn btn-filled" data-auth="unauthenticated" onclick="showAuthModal('signup')">
+                    <i class="fas fa-user-plus"></i> Sign Up
+                </button>
+                <div data-auth="authenticated" style="display: none;">
+                    <a href="dashboard.html" class="btn btn-filled">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-content">
+            <div class="hero-text">
+                <h1>Boost Your YouTube Watch Time & Earn Rewards</h1>
+                <p>Social Growth helps creators increase engagement while rewarding viewers with coins for watching videos. Join our community today!</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-filled" onclick="showAuthModal('signup')">
+                        <i class="fas fa-rocket"></i> Get Started
+                    </button>
+                    <button class="btn btn-outline" onclick="document.getElementById('features').scrollIntoView({behavior: 'smooth'})">
+                        <i class="fas fa-play-circle"></i> How It Works
+                    </button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="stat-text">
+                            <h3>+30 Coins</h3>
+                            <p>Signup Bonus</p>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-text">
+                            <h3>Referral Bonus</h3>
+                            <p>Earn 50 coins</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="visual-container">
+                    <div class="visual-header">
+                        <div class="visual-title">Active Campaigns</div>
+                        <div class="visual-balance">1,250 Coins</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress"></div>
+                    </div>
+                    <div class="campaign-list">
+                        <div class="campaign-item">
+                            <div class="campaign-thumb">
+                                <i class="fas fa-play"></i>
+                            </div>
+                            <div class="campaign-info">
+                                <h4>How to Grow Your Channel</h4>
+                                <p>65% Complete • 240 Coins</p>
+                            </div>
+                        </div>
+                        <div class="campaign-item">
+                            <div class="campaign-thumb">
+                                <i class="fas fa-play"></i>
+                            </div>
+                            <div class="campaign-info">
+                                <h4>Unboxing Tech Gadget</h4>
+                                <p>42% Complete • 180 Coins</p>
+                            </div>
+                        </div>
+                        <div class="campaign-item">
+                            <div class="campaign-thumb">
+                                <i class="fas fa-play"></i>
+                            </div>
+                            <div class="campaign-info">
+                                <h4>Cooking Tutorial</h4>
+                                <p>Completed • 360 Coins</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Why Choose Social Growth?</h2>
+                <p>Our platform offers unique features to help creators and viewers connect in a mutually beneficial ecosystem.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-stopwatch"></i>
+                    </div>
+                    <h3>Earn While You Watch</h3>
+                    <p>Get 3 coins for every 30 seconds of YouTube videos you watch. Your time is valuable - get rewarded for it!</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Boost Your Content</h3>
+                    <p>Increase watch time and engagement on your YouTube videos by creating campaigns that reach active viewers.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <h3>Real-Time Updates</h3>
+                    <p>Watch your campaign progress and coin balance update in real-time as viewers engage with your content.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-title">
+                <h2>How It Works</h2>
+                <p>Getting started with Social Growth is simple and straightforward.</p>
+            </div>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Sign Up</h3>
+                    <p>Create your account and receive 30 bonus coins to get started immediately.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Create or Watch</h3>
+                    <p>Either create campaigns for your YouTube videos or watch others' videos to earn coins.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Earn Rewards</h3>
+                    <p>Grow your channel and earn coins that can be used for your own campaigns or converted.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container cta-content">
+            <h2>Ready to Grow Your YouTube Channel?</h2>
+            <p>Join thousands of creators and viewers who are already using Social Growth to boost engagement and earn rewards.</p>
+            <button class="btn" onclick="showAuthModal('signup')">
+                <i class="fas fa-rocket"></i> Start Earning Today
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Social Growth</h3>
+                    <p style="color: #ccc; margin-bottom: 20px;">The platform for boosting YouTube watch time and earning rewards.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#about">About Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Legal</h3>
+                    <ul>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact</h3>
+                    <ul>
+                        <li><a href="mailto:support@socialgrowth.com">support@socialgrowth.com</a></li>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Community</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2023 Social Growth. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Auth Modal -->
+    <div class="modal auth-modal" id="authModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Join Social Growth</h3>
+                <button class="modal-close" onclick="hideAuthModal()">&times;</button>
+            </div>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+                <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+            </div>
+
+            <!-- Login Form -->
+            <form class="auth-form active" id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label" for="loginEmail">Email</label>
+                    <input type="email" class="form-input" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="loginPassword">Password</label>
+                    <input type="password" class="form-input" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-filled w-100">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+            </form>
+
+            <!-- Signup Form -->
+            <form class="auth-form" id="signupForm" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label class="form-label" for="signupName">Full Name</label>
+                    <input type="text" class="form-input" id="signupName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="signupEmail">Email</label>
+                    <input type="email" class="form-input" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="signupPassword">Password</label>
+                    <input type="password" class="form-input" id="signupPassword" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="referralCode">Referral Code (Optional)</label>
+                    <input type="text" class="form-input" id="referralCode" placeholder="Enter friend's referral code">
+                </div>
+                <button type="submit" class="btn btn-filled w-100">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification System -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Auth Modal Functions
+        function showAuthModal(tab = 'login') {
+            const modal = document.getElementById('authModal');
+            modal.classList.add('show');
+            switchAuthTab(tab);
+        }
+
+        function hideAuthModal() {
+            const modal = document.getElementById('authModal');
+            modal.classList.remove('show');
+        }
+
+        function switchAuthTab(tab) {
+            // Update tabs
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.auth-tab:nth-child(${tab === 'login' ? 1 : 2})`).classList.add('active');
+
+            // Update forms
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.getElementById(`${tab}Form`).classList.add('active');
+        }
+
+        // Auth Handlers
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                await authManager.signIn(email, password);
+                hideAuthModal();
+                showNotification('Login successful!', 'success');
+                // Redirect to dashboard after successful login
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1000);
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
+
+        async function handleSignup(event) {
+            event.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const referralCode = document.getElementById('referralCode').value;
+
+            try {
+                await authManager.signUp(email, password, name, referralCode || null);
+                hideAuthModal();
+                showNotification('Account created successfully! Check your email for verification.', 'success');
+                // Redirect to dashboard after successful signup
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 2000);
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
+
+        // Notification System
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('authModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideAuthModal();
+            }
+        });
+    </script>
+</body>
+</html>
