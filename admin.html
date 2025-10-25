@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Social Growth</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="supabase.js" defer></script>
+    <script src="auth.js" defer></script>
+    <style>
+        .admin-header {
+            background: linear-gradient(135deg, var(--dark-green) 0%, #064E3B 100%);
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-nav {
+            background: var(--white);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-tab {
+            padding: 0.5rem 1rem;
+            background: none;
+            border: none;
+            font-weight: 600;
+            color: var(--gray);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .nav-tab.active {
+            background: var(--green);
+            color: white;
+        }
+
+        .admin-content {
+            padding: 2rem 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--black);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .table-container {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        th {
+            background: var(--light-gray);
+            font-weight: 600;
+            color: var(--black);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .status-approved {
+            background: #D1FAE5;
+            color: #047857;
+        }
+
+        .status-rejected {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .status-active {
+            background: #D1FAE5;
+            color: #047857;
+        }
+
+        .status-completed {
+            background: #E0E7FF;
+            color: #3730A3;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="container header-content">
+            <a href="admin.html" class="logo">
+                <span class="logo-icon">📈</span>
+                Social Growth - Admin
+            </a>
+            <div class="user-info">
+                <span data-user-name>Admin</span>
+                <div class="user-avatar" data-user-avatar>A</div>
+                <button class="btn btn-outline btn-small" onclick="handleLogout()" style="background: rgba(255,255,255,0.2); color: white; border-color: white;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Admin Navigation -->
+    <nav class="admin-nav">
+        <div class="container">
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="switchTab('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </button>
+                <button class="nav-tab" onclick="switchTab('payments')">
+                    <i class="fas fa-credit-card"></i> Payments
+                </button>
+                <button class="nav-tab" onclick="switchTab('campaigns')">
+                    <i class="fas fa-video"></i> Campaigns
+                </button>
+                <button class="nav-tab" onclick="switchTab('users')">
+                    <i class="fas fa-users"></i> Users
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Admin Content -->
+    <div class="container admin-content">
+        <!-- Dashboard Tab -->
+        <div class="tab-content active" id="dashboardTab">
+            <h2 class="section-title">Admin Dashboard</h2>
+            
+            <!-- Stats Overview -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalUsers">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCampaigns">0</div>
+                    <div class="stat-label">Total Campaigns</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="activeCampaigns">0</div>
+                    <div class="stat-label">Active Campaigns</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalRevenue">₹0</div>
+                    <div class="stat-label">Total Revenue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pendingPayments">0</div>
+                    <div class="stat-label">Pending Payments</div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="section-header">
+                <h3 class="section-title">Recent Activity</h3>
+            </div>
+            <div class="card">
+                <div id="recentActivity">
+                    <div class="text-center p-3">
+                        <div class="spinner"></div>
+                        <p>Loading activity...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payments Tab -->
+        <div class="tab-content" id="paymentsTab">
+            <h2 class="section-title">Payment Requests</h2>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Amount</th>
+                            <th>Coins</th>
+                            <th>Reference ID</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTable">
+                        <tr>
+                            <td colspan="7" class="text-center p-3">
+                                <div class="spinner"></div>
+                                <p>Loading payments...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Campaigns Tab -->
+        <div class="tab-content" id="campaignsTab">
+            <h2 class="section-title">All Campaigns</h2>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Video URL</th>
+                            <th>Duration</th>
+                            <th>Intervals</th>
+                            <th>Progress</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="campaignsTable">
+                        <tr>
+                            <td colspan="8" class="text-center p-3">
+                                <div class="spinner"></div>
+                                <p>Loading campaigns...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div class="tab-content" id="usersTab">
+            <h2 class="section-title">All Users</h2>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Coins</th>
+                            <th>Referral Code</th>
+                            <th>Role</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTable">
+                        <tr>
+                            <td colspan="7" class="text-center p-3">
+                                <div class="spinner"></div>
+                                <p>Loading users...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification System -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Check admin access
+        document.addEventListener('DOMContentLoaded', async function() {
+            const user = authManager.getCurrentUser();
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const profile = authManager.getUserProfile();
+            if (!profile || profile.role !== 'admin') {
+                showNotification('Access denied. Admin privileges required.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 2000);
+                return;
+            }
+
+            await loadAdminData();
+        });
+
+        async function loadAdminData() {
+            try {
+                // Load platform stats
+                const stats = await db.getPlatformStats();
+                document.getElementById('totalUsers').textContent = stats.totalUsers;
+                document.getElementById('totalCampaigns').textContent = stats.totalCampaigns;
+                document.getElementById('activeCampaigns').textContent = stats.activeCampaigns;
+                document.getElementById('totalRevenue').textContent = `₹${stats.totalRevenue}`;
+
+                // Load pending payments count
+                const { data: pendingPayments } = await db.getPaymentRequests('pending');
+                document.getElementById('pendingPayments').textContent = pendingPayments?.length || 0;
+
+                // Load recent activity
+                await loadRecentActivity();
+                
+                // Load tab-specific data if active
+                const activeTab = document.querySelector('.nav-tab.active').getAttribute('onclick').replace("switchTab('", "").replace("')", "");
+                await loadTabData(activeTab);
+
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                showNotification('Error loading admin data', 'error');
+            }
+        }
+
+        async function loadTabData(tab) {
+            switch(tab) {
+                case 'payments':
+                    await loadPayments();
+                    break;
+                case 'campaigns':
+                    await loadCampaigns();
+                    break;
+                case 'users':
+                    await loadUsers();
+                    break;
+            }
+        }
+
+        async function loadPayments() {
+            try {
+                const { data: payments } = await db.getPaymentRequests();
+                const table = document.getElementById('paymentsTable');
+                
+                if (!payments || payments.length === 0) {
+                    table.innerHTML = '<tr><td colspan="7" class="text-center p-3">No payment requests found</td></tr>';
+                    return;
+                }
+
+                table.innerHTML = payments.map(payment => `
+                    <tr>
+                        <td>${payment.users?.name || 'Unknown User'}</td>
+                        <td>₹${payment.amount}</td>
+                        <td>${payment.coins}</td>
+                        <td>${payment.reference_id}</td>
+                        <td>
+                            <span class="status-badge status-${payment.status}">
+                                ${payment.status}
+                            </span>
+                        </td>
+                        <td>${new Date(payment.timestamp).toLocaleDateString()}</td>
+                        <td>
+                            <div class="btn-group">
+                                ${payment.status === 'pending' ? `
+                                    <button class="btn btn-filled btn-small" onclick="updatePaymentStatus('${payment.id}', 'approved')">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="btn btn-danger btn-small" onclick="updatePaymentStatus('${payment.id}', 'rejected')">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading payments:', error);
+                document.getElementById('paymentsTable').innerHTML = '<tr><td colspan="7" class="text-center p-3">Error loading payments</td></tr>';
+            }
+        }
+
+        async function loadCampaigns() {
+            try {
+                const { data: campaigns } = await db.getAllCampaigns();
+                const table = document.getElementById('campaignsTable');
+                
+                if (!campaigns || campaigns.length === 0) {
+                    table.innerHTML = '<tr><td colspan="8" class="text-center p-3">No campaigns found</td></tr>';
+                    return;
+                }
+
+                table.innerHTML = campaigns.map(campaign => `
+                    <tr>
+                        <td>${campaign.users?.name || 'Unknown User'}</td>
+                        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${campaign.video_url}
+                        </td>
+                        <td>${Math.round(campaign.video_length_sec / 60)}min</td>
+                        <td>${campaign.current_intervals_completed}/${campaign.total_intervals}</td>
+                        <td>
+                            <div style="width: 100px; background: var(--light-gray); border-radius: 10px; height: 8px;">
+                                <div style="width: ${(campaign.current_intervals_completed / campaign.total_intervals) * 100}%; background: var(--green); height: 100%; border-radius: 10px;"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-${campaign.status}">
+                                ${campaign.status}
+                            </span>
+                        </td>
+                        <td>${new Date(campaign.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <div class="btn-group">
+                                ${campaign.status === 'active' ? `
+                                    <button class="btn btn-danger btn-small" onclick="pauseCampaign('${campaign.id}')">
+                                        <i class="fas fa-pause"></i> Pause
+                                    </button>
+                                ` : ''}
+                                <button class="btn btn-outline btn-small" onclick="deleteCampaign('${campaign.id}')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading campaigns:', error);
+                document.getElementById('campaignsTable').innerHTML = '<tr><td colspan="8" class="text-center p-3">Error loading campaigns</td></tr>';
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const { data: users } = await db.getAllUsers();
+                const table = document.getElementById('usersTable');
+                
+                if (!users || users.length === 0) {
+                    table.innerHTML = '<tr><td colspan="7" class="text-center p-3">No users found</td></tr>';
+                    return;
+                }
+
+                table.innerHTML = users.map(user => `
+                    <tr>
+                        <td>${user.name}</td>
+                        <td>${user.email}</td>
+                        <td>${user.coins}</td>
+                        <td>${user.referral_code || 'N/A'}</td>
+                        <td>
+                            <span class="status-badge ${user.role === 'admin' ? 'status-approved' : 'status-pending'}">
+                                ${user.role}
+                            </span>
+                        </td>
+                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-outline btn-small" onclick="editUser('${user.id}')">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('usersTable').innerHTML = '<tr><td colspan="7" class="text-center p-3">Error loading users</td></tr>';
+            }
+        }
+
+        async function loadRecentActivity() {
+            // This would typically load recent platform activity
+            // For now, we'll show a placeholder
+            document.getElementById('recentActivity').innerHTML = `
+                <div class="p-2">
+                    <p>Recent admin activities will appear here</p>
+                </div>
+            `;
+        }
+
+        function switchTab(tab) {
+            // Update active tab
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+
+            // Update active content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`${tab}Tab`).classList.add('active');
+
+            // Load tab data
+            loadTabData(tab);
+        }
+
+        async function updatePaymentStatus(paymentId, status) {
+            try {
+                await db.updatePaymentStatus(paymentId, status);
+                
+                if (status === 'approved') {
+                    // Get payment details and add coins to user
+                    const { data: payment } = await supabase
+                        .from('payments')
+                        .select('*')
+                        .eq('id', paymentId)
+                        .single();
+
+                    if (payment) {
+                        await db.updateUserCoins(payment.user_id, payment.coins);
+                    }
+                }
+
+                showNotification(`Payment ${status} successfully`, 'success');
+                await loadPayments(); // Refresh the table
+                await loadAdminData(); // Refresh stats
+            } catch (error) {
+                showNotification('Error updating payment status: ' + error.message, 'error');
+            }
+        }
+
+        async function pauseCampaign(campaignId) {
+            if (!confirm('Are you sure you want to pause this campaign?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('campaigns')
+                    .update({ status: 'paused' })
+                    .eq('id', campaignId);
+
+                if (error) throw error;
+
+                showNotification('Campaign paused successfully', 'success');
+                await loadCampaigns();
+            } catch (error) {
+                showNotification('Error pausing campaign: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteCampaign(campaignId) {
+            if (!confirm('Are you sure you want to delete this campaign? This action cannot be undone.')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('campaigns')
+                    .delete()
+                    .eq('id', campaignId);
+
+                if (error) throw error;
+
+                showNotification('Campaign deleted successfully', 'success');
+                await loadCampaigns();
+            } catch (error) {
+                showNotification('Error deleting campaign: ' + error.message, 'error');
+            }
+        }
+
+        function editUser(userId) {
+            // This would typically open a user edit modal
+            showNotification('User edit functionality would be implemented here', 'warning');
+        }
+
+        async function handleLogout() {
+            try {
+                await authManager.signOut();
+                window.location.href = 'index.html';
+            } catch (error) {
+                showNotification('Error during logout', 'error');
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
