@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --white: #ffffff;
@@ -46,9 +45,6 @@
             align-items: center;
             background-color: var(--white);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
 
         .logo {
@@ -67,8 +63,7 @@
 
         .admin-nav {
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+            gap: 20px;
         }
 
         .nav-tab {
@@ -77,16 +72,11 @@
             font-weight: 500;
             border-radius: 8px;
             transition: all 0.3s;
-            border: 2px solid transparent;
         }
 
         .nav-tab.active {
             background-color: var(--green);
             color: var(--white);
-        }
-
-        .nav-tab:hover:not(.active) {
-            background-color: var(--light-gray);
         }
 
         .user-info {
@@ -95,18 +85,22 @@
             gap: 15px;
         }
 
-        .admin-badge {
-            background-color: var(--green);
-            color: var(--white);
-            padding: 5px 10px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(0, 0, 0, 0.05);
         }
 
         .admin-content {
             margin-top: 30px;
-            padding-bottom: 40px;
         }
 
         .tab-content {
@@ -118,7 +112,7 @@
         }
 
         .section-title {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             margin-bottom: 20px;
             font-weight: 600;
             color: var(--black);
@@ -134,36 +128,30 @@
         .stat-card {
             background-color: var(--card-bg);
             backdrop-filter: blur(10px);
-            padding: 25px;
+            padding: 20px;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             display: flex;
             align-items: center;
             gap: 15px;
-            transition: transform 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
         }
 
         .stat-icon {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             background: linear-gradient(135deg, var(--green), var(--dark-green));
             color: var(--white);
         }
 
         .stat-info h3 {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 700;
             margin-bottom: 5px;
-            color: var(--black);
         }
 
         .stat-info p {
@@ -181,17 +169,8 @@
         }
 
         .table-header {
-            padding: 25px;
+            padding: 20px;
             border-bottom: 1px solid #E5E7EB;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .table-header h3 {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--black);
         }
 
         .table-container {
@@ -204,7 +183,7 @@
         }
 
         th, td {
-            padding: 15px;
+            padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid #E5E7EB;
         }
@@ -213,8 +192,6 @@
             font-weight: 600;
             color: var(--gray);
             background-color: #F9FAFB;
-            position: sticky;
-            top: 0;
         }
 
         .btn {
@@ -260,15 +237,6 @@
             background-color: #D97706;
         }
 
-        .btn-info {
-            background-color: #3B82F6;
-            color: var(--white);
-        }
-
-        .btn-info:hover {
-            background-color: #2563EB;
-        }
-
         .status-badge {
             padding: 4px 8px;
             border-radius: 12px;
@@ -299,11 +267,6 @@
         .status-completed {
             background-color: #E0E7FF;
             color: #3730A3;
-        }
-
-        .status-paused {
-            background-color: #FEF3C7;
-            color: #D97706;
         }
 
         .alert {
@@ -342,7 +305,6 @@
             gap: 15px;
             margin-bottom: 20px;
             flex-wrap: wrap;
-            align-items: center;
         }
 
         .filter-group {
@@ -356,68 +318,6 @@
             border: 1px solid #E5E7EB;
             border-radius: 6px;
             font-size: 0.9rem;
-            background-color: var(--white);
-        }
-
-        .charts-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .chart-card {
-            background-color: var(--card-bg);
-            backdrop-filter: blur(10px);
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        }
-
-        .chart-card h3 {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: var(--black);
-        }
-
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .action-card {
-            background-color: var(--card-bg);
-            backdrop-filter: blur(10px);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .action-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .action-icon {
-            font-size: 2rem;
-            color: var(--green);
-            margin-bottom: 10px;
-        }
-
-        .action-card h4 {
-            font-size: 1rem;
-            margin-bottom: 5px;
-            color: var(--black);
-        }
-
-        .action-card p {
-            font-size: 0.8rem;
-            color: var(--gray);
         }
 
         @media (max-width: 768px) {
@@ -432,25 +332,11 @@
             }
 
             .stats-cards {
-                grid-template-columns: 1fr;
-            }
-
-            .charts-container {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
             }
 
             .filters {
                 flex-direction: column;
-                align-items: stretch;
-            }
-
-            .filter-group {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            th, td {
-                padding: 10px 5px;
             }
         }
     </style>
@@ -460,30 +346,20 @@
         <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
             <div class="logo">
                 <span class="logo-icon">🚀</span>
-                Social Growth - Admin Panel
+                Social Growth - Admin
             </div>
             
             <div class="admin-nav">
-                <div class="nav-tab active" data-tab="dashboard">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                </div>
-                <div class="nav-tab" data-tab="payments">
-                    <i class="fas fa-money-bill-wave"></i> Payments
-                </div>
-                <div class="nav-tab" data-tab="campaigns">
-                    <i class="fas fa-video"></i> Campaigns
-                </div>
-                <div class="nav-tab" data-tab="users">
-                    <i class="fas fa-users"></i> Users
-                </div>
-                <div class="nav-tab" data-tab="reports">
-                    <i class="fas fa-chart-bar"></i> Reports
-                </div>
+                <div class="nav-tab active" data-tab="dashboard">Dashboard</div>
+                <div class="nav-tab" data-tab="payments">Payments</div>
+                <div class="nav-tab" data-tab="campaigns">Campaigns</div>
+                <div class="nav-tab" data-tab="users">Users</div>
             </div>
 
             <div class="user-info">
-                <span class="admin-badge">ADMIN</span>
-                <span style="margin-right: 15px; color: var(--gray);">Welcome, Admin</span>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
             </div>
         </div>
     </div>
@@ -494,37 +370,6 @@
         <!-- Dashboard Tab -->
         <div class="tab-content active" id="dashboard-tab">
             <h2 class="section-title">Admin Dashboard</h2>
-            
-            <div class="quick-actions">
-                <div class="action-card" onclick="switchTab('payments')">
-                    <div class="action-icon">
-                        <i class="fas fa-money-check"></i>
-                    </div>
-                    <h4>Manage Payments</h4>
-                    <p>Approve or reject pending payments</p>
-                </div>
-                <div class="action-card" onclick="switchTab('campaigns')">
-                    <div class="action-icon">
-                        <i class="fas fa-video"></i>
-                    </div>
-                    <h4>Manage Campaigns</h4>
-                    <p>View and control all campaigns</p>
-                </div>
-                <div class="action-card" onclick="switchTab('users')">
-                    <div class="action-icon">
-                        <i class="fas fa-user-cog"></i>
-                    </div>
-                    <h4>User Management</h4>
-                    <p>Manage users and permissions</p>
-                </div>
-                <div class="action-card" onclick="switchTab('reports')">
-                    <div class="action-icon">
-                        <i class="fas fa-chart-pie"></i>
-                    </div>
-                    <h4>View Reports</h4>
-                    <p>Analytics and insights</p>
-                </div>
-            </div>
             
             <div class="stats-cards">
                 <div class="stat-card">
@@ -565,23 +410,9 @@
                 </div>
             </div>
 
-            <div class="charts-container">
-                <div class="chart-card">
-                    <h3>User Registration Trend</h3>
-                    <canvas id="usersChart"></canvas>
-                </div>
-                <div class="chart-card">
-                    <h3>Campaign Status</h3>
-                    <canvas id="campaignsChart"></canvas>
-                </div>
-            </div>
-
             <div class="data-table">
                 <div class="table-header">
                     <h3>Recent Activity</h3>
-                    <button class="btn btn-info" onclick="loadRecentActivity()">
-                        <i class="fas fa-refresh"></i> Refresh
-                    </button>
                 </div>
                 <div class="table-container">
                     <table>
@@ -614,15 +445,11 @@
                 <div class="filter-group">
                     <label>Status:</label>
                     <select id="payment-status-filter">
-                        <option value="all">All Payments</option>
+                        <option value="all">All</option>
                         <option value="pending">Pending</option>
                         <option value="approved">Approved</option>
                         <option value="rejected">Rejected</option>
                     </select>
-                </div>
-                <div class="filter-group">
-                    <label>Search:</label>
-                    <input type="text" id="payment-search" placeholder="Search by reference ID or email...">
                 </div>
                 <button class="btn btn-success" onclick="loadPayments()">
                     <i class="fas fa-refresh"></i> Refresh
@@ -664,15 +491,10 @@
                 <div class="filter-group">
                     <label>Status:</label>
                     <select id="campaign-status-filter">
-                        <option value="all">All Campaigns</option>
+                        <option value="all">All</option>
                         <option value="active">Active</option>
                         <option value="completed">Completed</option>
-                        <option value="paused">Paused</option>
                     </select>
-                </div>
-                <div class="filter-group">
-                    <label>Search:</label>
-                    <input type="text" id="campaign-search" placeholder="Search by title or user...">
                 </div>
                 <button class="btn btn-success" onclick="loadCampaigns()">
                     <i class="fas fa-refresh"></i> Refresh
@@ -712,13 +534,10 @@
             
             <div class="filters">
                 <div class="filter-group">
-                    <input type="text" id="user-search" placeholder="Search users by name or email...">
+                    <input type="text" id="user-search" placeholder="Search users...">
                 </div>
                 <button class="btn btn-success" onclick="loadUsers()">
                     <i class="fas fa-refresh"></i> Refresh
-                </button>
-                <button class="btn btn-info" onclick="exportUsers()">
-                    <i class="fas fa-download"></i> Export
                 </button>
             </div>
 
@@ -732,14 +551,13 @@
                                 <th>Coins</th>
                                 <th>Campaigns</th>
                                 <th>Referrals</th>
-                                <th>Status</th>
                                 <th>Joined</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="users-table">
                             <tr>
-                                <td colspan="8" class="empty-state">
+                                <td colspan="7" class="empty-state">
                                     <i class="fas fa-spinner fa-spin"></i>
                                     <div>Loading users...</div>
                                 </td>
@@ -749,233 +567,475 @@
                 </div>
             </div>
         </div>
-
-        <!-- Reports Tab -->
-        <div class="tab-content" id="reports-tab">
-            <h2 class="section-title">Analytics & Reports</h2>
-            
-            <div class="filters">
-                <div class="filter-group">
-                    <label>Date Range:</label>
-                    <input type="date" id="report-start-date">
-                    <span>to</span>
-                    <input type="date" id="report-end-date">
-                </div>
-                <button class="btn btn-success" onclick="generateReports()">
-                    <i class="fas fa-chart-line"></i> Generate Report
-                </button>
-                <button class="btn btn-info" onclick="exportReport()">
-                    <i class="fas fa-file-export"></i> Export
-                </button>
-            </div>
-
-            <div class="stats-cards">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="total-revenue">₹0</h3>
-                        <p>Total Revenue</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-eye"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="total-watches">0</h3>
-                        <p>Total Watches</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-user-plus"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="new-users">0</h3>
-                        <p>New Users</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-share-alt"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="total-referrals">0</h3>
-                        <p>Total Referrals</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="charts-container">
-                <div class="chart-card">
-                    <h3>Revenue Trend</h3>
-                    <canvas id="revenueChart"></canvas>
-                </div>
-                <div class="chart-card">
-                    <h3>User Activity</h3>
-                    <canvas id="activityChart"></canvas>
-                </div>
-            </div>
-
-            <div class="data-table">
-                <div class="table-header">
-                    <h3>Top Campaigns</h3>
-                </div>
-                <div class=table-container                    <table>
-                        <thead>
-                            <tr>
-                                <th>mpaign</th>
-                                <th>Owner</th>
-                                <th>Watches</th>
-                                <th>Coins Spent</th>
-                                <th>Completion Rate</th>
-                            </tr>
-         </thead>
-                        <tbody id="top-campaigns">
-                            <tr>
-                                <td colspan="5" class="empty-state">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    <div>Loading top campaigns...</div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <script>  
-        <script>
-    // Initialize Supabase
-    const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-    // Test connection function
-    async function testConnection() {
-        try {
-            console.log("Testing Supabase connection...");
-            
-            const { data, error } = await supabase
-                .from('users')
-                .select('*')
-                .limit(1);
+        let currentUser = null;
 
-            if (error) {
-                console.error("Supabase Error:", error);
-                alert("Database connection failed: " + error.message);
-                return false;
+        // Check authentication and admin status
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (!session) {
+                window.location.href = 'login.html';
+            } else {
+                currentUser = session.user;
+                checkAdminStatus();
             }
+        });
 
-            console.log("Connection successful! Data:", data);
-            return true;
-            
-        } catch (err) {
-            console.error("Connection test failed:", err);
-            alert("Connection test failed: " + err.message);
-            return false;
+        async function checkAdminStatus() {
+            try {
+                console.log('Checking admin status for user:', currentUser.id);
+                
+                const { data: userData, error } = await supabase
+                    .from('users')
+                    .select('is_admin, email')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                if (error) {
+                    console.error('Error checking admin status:', error);
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+
+                console.log('User data:', userData);
+
+                if (!userData || !userData.is_admin) {
+                    console.log('User is not admin, redirecting...');
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+
+                console.log('User is admin, loading data...');
+                
+                // Load initial data
+                loadDashboardStats();
+                loadRecentActivity();
+                setupTabNavigation();
+
+            } catch (error) {
+                console.error('Error checking admin status:', error);
+                window.location.href = 'dashboard.html';
+            }
         }
-    }
 
-    // Load data with better error handling
-    async function loadDashboardStats() {
-        try {
-            console.log("Loading dashboard stats...");
+        function setupTabNavigation() {
+            const tabs = document.querySelectorAll('.nav-tab');
             
-            // Test connection first
-            const connected = await testConnection();
-            if (!connected) return;
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Hide all tab contents
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Show selected tab content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                    
+                    // Load data for the selected tab
+                    switch(tabId) {
+                        case 'dashboard':
+                            loadDashboardStats();
+                            loadRecentActivity();
+                            break;
+                        case 'payments':
+                            loadPayments();
+                            break;
+                        case 'campaigns':
+                            loadCampaigns();
+                            break;
+                        case 'users':
+                            loadUsers();
+                            break;
+                    }
+                });
+            });
 
-            // Total users
-            const { data: users, count: usersCount, error: usersError } = await supabase
-                .from('users')
-                .select('*', { count: 'exact', head: false });
-
-            if (usersError) {
-                console.error("Users Error:", usersError);
-                throw usersError;
-            }
-
-            console.log("Users data:", users);
-            document.getElementById('total-users').textContent = usersCount || 0;
-
-            // Total campaigns
-            const { count: campaignsCount, error: campaignsError } = await supabase
-                .from('campaigns')
-                .select('*', { count: 'exact', head: true });
-
-            if (campaignsError) throw campaignsError;
-            document.getElementById('total-campaigns').textContent = campaignsCount || 0;
-
-            // Total coins in system
-            const totalCoins = users ? users.reduce((sum, user) => sum + (user.coins || 0), 0) : 0;
-            document.getElementById('total-coins').textContent = totalCoins;
-
-            // Pending payments
-            const { count: pendingPayments, error: paymentsError } = await supabase
-                .from('payments')
-                .select('*', { count: 'exact', head: true })
-                .eq('status', 'pending');
-
-            if (paymentsError) throw paymentsError;
-            document.getElementById('pending-payments').textContent = pendingPayments || 0;
-
-        } catch (error) {
-            console.error('Error loading dashboard stats:', error);
-            document.getElementById('total-users').textContent = 'Error';
-            document.getElementById('total-campaigns').textContent = 'Error';
-            document.getElementById('total-coins').textContent = 'Error';
-            document.getElementById('pending-payments').textContent = 'Error';
+            // Setup filter listeners
+            document.getElementById('payment-status-filter').addEventListener('change', loadPayments);
+            document.getElementById('campaign-status-filter').addEventListener('change', loadCampaigns);
+            document.getElementById('user-search').addEventListener('input', loadUsers);
         }
-    }
 
-    // Load users with better error handling
-    async function loadUsers() {
-        try {
-            console.log("Loading users...");
-            
-            const searchTerm = document.getElementById('user-search').value;
-            
-            let query = supabase
-                .from('users')
-                .select('*')
-                .order('created_at', { ascending: false });
+        async function loadDashboardStats() {
+            try {
+                console.log('Loading dashboard stats...');
+                
+                // Total users
+                const { count: usersCount, error: usersError } = await supabase
+                    .from('users')
+                    .select('*', { count: 'exact', head: true });
 
-            if (searchTerm) {
-                query = query.or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
+                if (usersError) console.error('Users count error:', usersError);
+                document.getElementById('total-users').textContent = usersCount || 0;
+
+                // Total campaigns
+                const { count: campaignsCount, error: campaignsError } = await supabase
+                    .from('campaigns')
+                    .select('*', { count: 'exact', head: true });
+
+                if (campaignsError) console.error('Campaigns count error:', campaignsError);
+                document.getElementById('total-campaigns').textContent = campaignsCount || 0;
+
+                // Total coins in system
+                const { data: users, error: usersDataError } = await supabase
+                    .from('users')
+                    .select('coins');
+                
+                if (usersDataError) console.error('Users data error:', usersDataError);
+                const totalCoins = users ? users.reduce((sum, user) => sum + (user.coins || 0), 0) : 0;
+                document.getElementById('total-coins').textContent = totalCoins;
+
+                // Pending payments
+                const { count: pendingPayments, error: paymentsError } = await supabase
+                    .from('payments')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('status', 'pending');
+
+                if (paymentsError) console.error('Payments error:', paymentsError);
+                document.getElementById('pending-payments').textContent = pendingPayments || 0;
+
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
             }
+        }
 
-            const { data: users, error } = await query;
+        async function loadRecentActivity() {
+            try {
+                console.log('Loading recent activity...');
+                
+                // Get recent payments, campaigns, and watch logs
+                const [{ data: payments }, { data: campaigns }, { data: watchLogs }] = await Promise.all([
+                    supabase
+                        .from('payments')
+                        .select('*, users(name)')
+                        .order('timestamp', { ascending: false })
+                        .limit(5),
+                    supabase
+                        .from('campaigns')
+                        .select('*, users(name)')
+                        .order('created_at', { ascending: false })
+                        .limit(5),
+                    supabase
+                        .from('watch_logs')
+                        .select('*, users(name), campaigns(video_title)')
+                        .order('timestamp', { ascending: false })
+                        .limit(5)
+                ]);
 
-            if (error) {
-                console.error("Users load error:", error);
-                throw error;
-            }
+                const activities = [];
+                
+                // Process payments
+                if (payments) {
+                    payments.forEach(payment => {
+                        activities.push({
+                            type: 'Payment',
+                            description: `₹${payment.amount} payment ${payment.status}`,
+                            user: payment.users?.name || 'Unknown',
+                            date: payment.timestamp
+                        });
+                    });
+                }
 
-            console.log("Loaded users:", users);
+                // Process campaigns
+                if (campaigns) {
+                    campaigns.forEach(campaign => {
+                        activities.push({
+                            type: 'Campaign',
+                            description: `"${campaign.video_title}" created`,
+                            user: campaign.users?.name || 'Unknown',
+                            date: campaign.created_at
+                        });
+                    });
+                }
 
-            const container = document.getElementById('users-table');
-            
-            if (!users || users.length === 0) {
-                container.innerHTML = `
+                // Process watch logs
+                if (watchLogs) {
+                    watchLogs.forEach(log => {
+                        activities.push({
+                            type: 'Watch',
+                            description: `Watched ${log.coins_earned} coins`,
+                            user: log.users?.name || 'Unknown',
+                            date: log.timestamp
+                        });
+                    });
+                }
+
+                // Sort by date and take top 10
+                activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+                const recentActivities = activities.slice(0, 10);
+
+                const container = document.getElementById('recent-activity');
+                
+                if (recentActivities.length === 0) {
+                    container.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <div>No recent activity</div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = recentActivities.map(activity => `
                     <tr>
-                        <td colspan="8" class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            <div>No users found in database</div>
-                            <small>Make sure your Supabase tables are properly set up</small>
+                        <td>${activity.type}</td>
+                        <td>${activity.description}</td>
+                        <td>${activity.user}</td>
+                        <td>${new Date(activity.date).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
+            }
+        }
+
+        async function loadPayments() {
+            try {
+                const statusFilter = document.getElementById('payment-status-filter').value;
+                
+                let query = supabase
+                    .from('payments')
+                    .select('*, users(name, email)')
+                    .order('timestamp', { ascending: false });
+
+                if (statusFilter !== 'all') {
+                    query = query.eq('status', statusFilter);
+                }
+
+                const { data: payments, error } = await query;
+
+                if (error) throw error;
+
+                const container = document.getElementById('payments-table');
+                
+                if (!payments || payments.length === 0) {
+                    container.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <div>No payments found</div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = payments.map(payment => `
+                    <tr>
+                        <td>${payment.users?.name || 'N/A'} (${payment.users?.email || 'N/A'})</td>
+                        <td>₹${payment.amount}</td>
+                        <td>${payment.coins_credited || 'Pending'}</td>
+                        <td>${payment.reference_id}</td>
+                        <td>
+                            <span class="status-badge status-${payment.status}">
+                                ${payment.status}
+                            </span>
+                        </td>
+                        <td>${new Date(payment.timestamp).toLocaleDateString()}</td>
+                        <td>
+                            ${payment.status === 'pending' ? `
+                                <button class="btn btn-success btn-sm" onclick="approvePayment('${payment.id}')">
+                                    Approve
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="rejectPayment('${payment.id}')">
+                                    Reject
+                                </button>
+                            ` : 'No actions'}
                         </td>
                     </tr>
-                `;
-                return;
-            }
+                `).join('');
 
-            // Get additional stats for each user
-            const usersWithStats = await Promise.all(
-                users.map(async (user) => {
-                    try {
+            } catch (error) {
+                console.error('Error loading payments:', error);
+                showAlert('Error loading payments', 'error');
+            }
+        }
+
+        async function approvePayment(paymentId) {
+            try {
+                console.log('Approving payment:', paymentId);
+                
+                // Update payment status
+                const { error: paymentError } = await supabase
+                    .from('payments')
+                    .update({ status: 'approved' })
+                    .eq('id', paymentId);
+
+                if (paymentError) throw paymentError;
+
+                // Get payment details to credit coins
+                const { data: payment, error: getError } = await supabase
+                    .from('payments')
+                    .select('*')
+                    .eq('id', paymentId)
+                    .single();
+
+                if (getError) throw getError;
+
+                // Credit coins to user
+                const { error: coinsError } = await supabase
+                    .from('users')
+                    .update({ coins: supabase.sql`coins + ${payment.coins_credited}` })
+                    .eq('id', payment.user_id);
+
+                if (coinsError) throw coinsError;
+
+                // Create notification for user
+                await supabase
+                    .from('notifications')
+                    .insert([
+                        {
+                            user_id: payment.user_id,
+                            title: 'Payment Approved!',
+                            message: `Your payment of ₹${payment.amount} has been approved. ${payment.coins_credited} coins credited to your account.`,
+                            type: 'success'
+                        }
+                    ]);
+
+                showAlert('Payment approved successfully!', 'success');
+                loadPayments();
+                loadDashboardStats();
+
+            } catch (error) {
+                console.error('Error approving payment:', error);
+                showAlert('Error approving payment', 'error');
+            }
+        }
+
+        async function rejectPayment(paymentId) {
+            try {
+                const { error } = await supabase
+                    .from('payments')
+                    .update({ status: 'rejected' })
+                    .eq('id', paymentId);
+
+                if (error) throw error;
+
+                // Get payment details for notification
+                const { data: payment, error: getError } = await supabase
+                    .from('payments')
+                    .select('*')
+                    .eq('id', paymentId)
+                    .single();
+
+                if (getError) throw getError;
+
+                // Create notification for user
+                await supabase
+                    .from('notifications')
+                    .insert([
+                        {
+                            user_id: payment.user_id,
+                            title: 'Payment Rejected',
+                            message: `Your payment of ₹${payment.amount} has been rejected. Please contact support for more information.`,
+                            type: 'error'
+                        }
+                    ]);
+
+                showAlert('Payment rejected successfully!', 'success');
+                loadPayments();
+
+            } catch (error) {
+                console.error('Error rejecting payment:', error);
+                showAlert('Error rejecting payment', 'error');
+            }
+        }
+
+        async function loadCampaigns() {
+            try {
+                const statusFilter = document.getElementById('campaign-status-filter').value;
+                
+                let query = supabase
+                    .from('campaigns')
+                    .select('*, users(name, email)')
+                    .order('created_at', { ascending: false });
+
+                if (statusFilter !== 'all') {
+                    query = query.eq('status', statusFilter);
+                }
+
+                const { data: campaigns, error } = await query;
+
+                if (error) throw error;
+
+                const container = document.getElementById('campaigns-table');
+                
+                if (!campaigns || campaigns.length === 0) {
+                    container.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <div>No campaigns found</div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = campaigns.map(campaign => `
+                    <tr>
+                        <td>${campaign.video_title || 'Untitled Campaign'}</td>
+                        <td>${campaign.users?.name || 'N/A'} (${campaign.users?.email || 'N/A'})</td>
+                        <td>${campaign.current_intervals_completed}/${campaign.total_intervals}</td>
+                        <td>${campaign.total_coins_spent || 0}</td>
+                        <td>
+                            <span class="status-badge status-${campaign.status}">
+                                ${campaign.status}
+                            </span>
+                        </td>
+                        <td>${new Date(campaign.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="pauseCampaign('${campaign.id}')">
+                                Pause
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteCampaign('${campaign.id}')">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading campaigns:', error);
+                showAlert('Error loading campaigns', 'error');
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const searchTerm = document.getElementById('user-search').value;
+                
+                let query = supabase
+                    .from('users')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (searchTerm) {
+                    query = query.or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
+                }
+
+                const { data: users, error } = await query;
+
+                if (error) throw error;
+
+                // Get additional stats for each user
+                const usersWithStats = await Promise.all(
+                    users.map(async (user) => {
                         const [{ count: campaignsCount }, { count: referralsCount }] = await Promise.all([
                             supabase
                                 .from('campaigns')
@@ -992,81 +1052,89 @@
                             campaigns_count: campaignsCount || 0,
                             referrals_count: referralsCount || 0
                         };
-                    } catch (err) {
-                        console.error(`Error loading stats for user ${user.id}:`, err);
-                        return {
-                            ...user,
-                            campaigns_count: 0,
-                            referrals_count: 0
-                        };
-                    }
-                })
-            );
+                    })
+                );
 
-            container.innerHTML = usersWithStats.map(user => `
-                <tr>
-                    <td>${user.name || 'N/A'}</td>
-                    <td>${user.email}</td>
-                    <td>${user.coins || 0}</td>
-                    <td>${user.campaigns_count}</td>
-                    <td>${user.referrals_count}</td>
-                    <td>
-                        <span class="status-badge ${user.is_admin ? 'status-approved' : 'status-active'}">
-                            ${user.is_admin ? 'Admin' : 'User'}
-                        </span>
-                    </td>
-                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm" onclick="adjustCoins('${user.id}', '${user.email}')">
-                            Adjust Coins
-                        </button>
-                        ${!user.is_admin ? `
-                            <button class="btn btn-info btn-sm" onclick="toggleAdmin('${user.id}', '${user.email}')">
-                                Make Admin
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteUser('${user.id}', '${user.email}')">
-                                Delete
-                            </button>
-                        ` : ''}
-                    </td>
-                </tr>
-            `).join('');
+                const container = document.getElementById('users-table');
+                
+                if (!usersWithStats || usersWithStats.length === 0) {
+                    container.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <div>No users found</div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
 
-        } catch (error) {
-            console.error('Error loading users:', error);
-            const container = document.getElementById('users-table');
-            container.innerHTML = `
-                <tr>
-                    <td colspan="8" class="empty-state">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <div>Error loading users</div>
-                        <small>Check browser console for details</small>
-                    </td>
-                </tr>
-            `;
+                container.innerHTML = usersWithStats.map(user => `
+                    <tr>
+                        <td>${user.name || 'N/A'}</td>
+                        <td>${user.email}</td>
+                        <td>${user.coins || 0}</td>
+                        <td>${user.campaigns_count}</td>
+                        <td>${user.referrals_count}</td>
+                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="adjustCoins('${user.id}')">
+                                Adjust Coins
+                            </button>
+                            ${!user.is_admin ? `
+                                <button class="btn btn-danger btn-sm" onclick="deleteUser('${user.id}')">
+                                    Delete
+                                </button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading users:', error);
+                showAlert('Error loading users', 'error');
+            }
         }
-    }
 
-    // Initialize admin panel
-    window.onload = function() {
-        console.log("Admin panel loading...");
-        initializeAdminPanel();
-    };
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
 
-    function initializeAdminPanel() {
-        // Load initial data
-        loadDashboardStats();
-        loadRecentActivity();
-        setupTabNavigation();
-        initializeCharts();
-        
-        // Show connection status
-        setTimeout(() => {
-            testConnection();
-        }, 1000);
-    }
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
 
-    // ... rest of your existing functions remain the same
-</script>
+        // Placeholder functions for other actions
+        function pauseCampaign(campaignId) {
+            alert(`Pause campaign ${campaignId} - Feature coming soon!`);
+        }
+
+        function deleteCampaign(campaignId) {
+            if (confirm('Are you sure you want to delete this campaign?')) {
+                alert(`Delete campaign ${campaignId} - Feature coming soon!`);
+            }
+        }
+
+        function adjustCoins(userId) {
+            const newCoins = prompt('Enter new coin balance:');
+            if (newCoins !== null && !isNaN(newCoins)) {
+                alert(`Adjust coins for user ${userId} to ${newCoins} - Feature coming soon!`);
+            }
+        }
+
+        function deleteUser(userId) {
+            if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+                alert(`Delete user ${userId} - Feature coming soon!`);
+            }
+        }
+    </script>
 </body>
 </html>
