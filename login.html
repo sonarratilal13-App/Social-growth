@@ -203,7 +203,7 @@
         </form>
 
         <div class="signup-link">
-            Don't have an account? <a href="signup.html">Create one here</a>
+            Don't have an account? <a href="signup-fixed.html">Create one here</a>
         </div>
 
         <div class="admin-login">
@@ -224,9 +224,6 @@
                 checkUserExists(session.user.id).then(exists => {
                     if (exists) {
                         window.location.href = 'dashboard.html';
-                    } else {
-                        // If user doesn't exist in database, log them out
-                        supabase.auth.signOut();
                     }
                 });
             }
@@ -238,9 +235,9 @@
                     .from('users')
                     .select('id')
                     .eq('id', userId)
-                    .single();
+                    .maybeSingle();
                     
-                return !error && data !== null;
+                return data !== null;
             } catch (error) {
                 return false;
             }
@@ -261,31 +258,44 @@
             submitBtn.textContent = 'Signing In...';
             
             try {
+                console.log('Starting login process...');
+                
                 // Sign in user with Supabase Auth
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
                 
-                if (error) throw error;
+                if (error) {
+                    console.error('Auth error:', error);
+                    throw error;
+                }
                 
                 if (data.user) {
+                    console.log('User authenticated:', data.user.id);
+                    
                     // Check if user exists in our database
                     const userExists = await checkUserExists(data.user.id);
+                    console.log('User exists in database:', userExists);
                     
                     if (!userExists) {
+                        console.log('Creating user profile...');
                         // Create user profile if it doesn't exist
                         await createUserProfile(data.user, email);
+                        console.log('User profile created');
                     }
                     
-                    // Check if user is admin
+                    // Get user data to check admin status
                     const { data: userData, error: userError } = await supabase
                         .from('users')
                         .select('is_admin')
                         .eq('id', data.user.id)
                         .single();
                     
-                    if (userError) throw userError;
+                    if (userError) {
+                        console.error('User data fetch error:', userError);
+                        throw new Error('Failed to load user data');
+                    }
                     
                     // Handle daily login bonus and streak
                     await handleLoginBonus(data.user.id);
@@ -300,7 +310,15 @@
                 
             } catch (error) {
                 console.error('Login error:', error);
-                showAlert(error.message || 'Invalid email or password', 'error');
+                let errorMessage = error.message || 'Invalid email or password';
+                
+                if (error.message.includes('Invalid login credentials')) {
+                    errorMessage = 'Invalid email or password. Please try again.';
+                } else if (error.message.includes('Email not confirmed')) {
+                    errorMessage = 'Please verify your email address before logging in.';
+                }
+                
+                showAlert(errorMessage, 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Sign In';
@@ -310,6 +328,8 @@
         async function createUserProfile(authUser, email) {
             try {
                 const userReferralCode = 'SG-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+                
+                console.log('Creating profile with referral code:', userReferralCode);
                 
                 const { error } = await supabase
                     .from('users')
@@ -323,10 +343,15 @@
                         }
                     ]);
                     
-                if (error) throw error;
+                if (error) {
+                    console.error('Profile creation error:', error);
+                    throw error;
+                }
+                
+                console.log('Profile created successfully');
             } catch (error) {
                 console.error('Error creating user profile:', error);
-                throw new Error('Failed to create user profile');
+                throw new Error('Failed to create user profile. Please try signing up again.');
             }
         }
         
@@ -361,7 +386,7 @@
                 }
                 
                 // Daily login bonus (only if not already logged in today)
-                if (!lastLogin || lastLogin.toDateString() !== today.toDateString()) {
+                if (!lastLogin || new Date(lastLogin).toDateString() !== today.toDateString()) {
                     bonusCoins += 10; // Daily bonus
                     
                     // Streak bonus
