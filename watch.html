@@ -275,6 +275,13 @@
             justify-content: center;
             color: var(--white);
             font-size: 3rem;
+            overflow: hidden;
+        }
+
+        .campaign-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .campaign-info {
@@ -565,6 +572,14 @@
             }
         }
 
+        // YouTube video ID extract function
+        function extractYouTubeVideoId(url) {
+            if (!url) return null;
+            const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[7].length === 11) ? match[7] : null;
+        }
+
         async function loadAvailableCampaigns() {
             if (!currentUser) return;
 
@@ -595,28 +610,37 @@
                     return;
                 }
 
-                container.innerHTML = campaigns.map(campaign => `
-                    <div class="campaign-card">
-                        <div class="campaign-thumbnail">
-                            <i class="fab fa-youtube"></i>
+                container.innerHTML = campaigns.map(campaign => {
+                    // Extract YouTube video ID from URL
+                    const videoId = extractYouTubeVideoId(campaign.video_url);
+                    const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
+                    
+                    return `
+                        <div class="campaign-card">
+                            <div class="campaign-thumbnail">
+                                ${thumbnailUrl ? 
+                                    `<img src="${thumbnailUrl}" alt="${campaign.video_title}" style="width: 100%; height: 100%; object-fit: cover;">` :
+                                    `<i class="fab fa-youtube"></i>`
+                                }
+                            </div>
+                            <div class="campaign-info">
+                                <h3 class="campaign-title">${campaign.video_title || 'Untitled Campaign'}</h3>
+                                <div class="campaign-stats">
+                                    <span>${campaign.video_length_sec}s video</span>
+                                    <span>${campaign.total_intervals} intervals</span>
+                                </div>
+                                <div class="campaign-stats">
+                                    <span>By: ${campaign.users.name}</span>
+                                    <span>${campaign.current_intervals_completed}/${campaign.total_intervals} watched</span>
+                                </div>
+                                <div class="campaign-actions">
+                                    <button class="btn btn-outline" onclick="viewCampaignDetails('${campaign.id}')">Details</button>
+                                    <button class="btn btn-primary" onclick="selectCampaign('${campaign.id}')">Watch</button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="campaign-info">
-                            <h3 class="campaign-title">${campaign.video_title || 'Untitled Campaign'}</h3>
-                            <div class="campaign-stats">
-                                <span>${campaign.video_length_sec}s video</span>
-                                <span>${campaign.total_intervals} intervals</span>
-                            </div>
-                            <div class="campaign-stats">
-                                <span>By: ${campaign.users.name}</span>
-                                <span>${campaign.current_intervals_completed}/${campaign.total_intervals} watched</span>
-                            </div>
-                            <div class="campaign-actions">
-                                <button class="btn btn-outline" onclick="viewCampaignDetails('${campaign.id}')">Details</button>
-                                <button class="btn btn-primary" onclick="selectCampaign('${campaign.id}')">Watch</button>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
 
             } catch (error) {
                 console.error('Error loading campaigns:', error);
@@ -674,12 +698,6 @@
                 console.error('Error selecting campaign:', error);
                 showAlert('Error loading campaign', 'error');
             }
-        }
-
-        function extractYouTubeVideoId(url) {
-            const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[7].length === 11) ? match[7] : null;
         }
 
         function loadYouTubePlayer(videoId) {
