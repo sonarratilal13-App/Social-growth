@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch Videos - Social Growth</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="supabase.js" defer></script>
+    <script src="auth.js" defer></script>
+    <style>
+        .watch-header {
+            background: linear-gradient(135deg, var(--green) 0%, var(--dark-green) 100%);
+            color: white;
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .watch-content {
+            padding: 2rem 0;
+        }
+
+        .video-container {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+        }
+
+        .video-player {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: var(--black);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .video-info h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--black);
+        }
+
+        .video-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 1rem;
+            background: var(--light-gray);
+            border-radius: 12px;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--green);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .watch-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .timer-display {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 1rem 0;
+            color: var(--black);
+        }
+
+        .coins-earned {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--green);
+            margin-bottom: 1rem;
+        }
+
+        .campaigns-list {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .campaign-item {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .campaign-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .campaign-item.active {
+            border-color: var(--green);
+            background: var(--light-green);
+        }
+
+        .campaign-thumb {
+            width: 120px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--light-green), var(--green));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .campaign-details {
+            flex: 1;
+        }
+
+        .campaign-details h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--black);
+        }
+
+        .campaign-meta {
+            display: flex;
+            gap: 1rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--light-gray);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--green), var(--dark-green));
+            border-radius: 3px;
+        }
+
+        .anti-cheat-warning {
+            background: #FEF3C7;
+            border: 1px solid #F59E0B;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #92400E;
+        }
+
+        .watch-status {
+            text-align: center;
+            padding: 1rem;
+            background: var(--light-green);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .status-active {
+            background: #D1FAE5;
+            color: #047857;
+        }
+
+        .status-paused {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .status-inactive {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        @media (max-width: 768px) {
+            .campaign-item {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .campaign-thumb {
+                width: 100%;
+                height: 120px;
+            }
+
+            .watch-controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="watch-header">
+        <div class="container header-content">
+            <a href="dashboard.html" class="logo">
+                <span class="logo-icon">📈</span>
+                Social Growth
+            </a>
+            <div class="user-info">
+                <span data-user-name>Loading...</span>
+                <div class="user-avatar" data-user-avatar>U</div>
+                <a href="dashboard.html" class="btn btn-outline btn-small" style="background: rgba(255,255,255,0.2); color: white; border-color: white;">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Watch Content -->
+    <div class="container watch-content">
+        <!-- Anti-cheat Warning -->
+        <div class="anti-cheat-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Anti-Cheat System Active:</strong> Please keep this tab active and don't skip videos. 
+            Tab switching or skipping may pause earning.
+        </div>
+
+        <!-- Video Player Section -->
+        <div class="video-container">
+            <div class="video-player" id="videoPlayer">
+                <div class="text-center">
+                    <i class="fas fa-play-circle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <p>Select a campaign to start watching</p>
+                </div>
+            </div>
+
+            <div class="video-info">
+                <h2 id="videoTitle">Select a Campaign</h2>
+                
+                <div class="video-stats">
+                    <div class="stat">
+                        <div class="stat-number" id="coinsPerInterval">3</div>
+                        <div class="stat-label">Coins per 30s</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="totalIntervals">0</div>
+                        <div class="stat-label">Total Intervals</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="completedIntervals">0</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="remainingIntervals">0</div>
+                        <div class="stat-label">Remaining</div>
+                    </div>
+                </div>
+
+                <div class="watch-status" id="watchStatus">
+                    Select a campaign to start earning coins
+                </div>
+
+                <div class="timer-display" id="timerDisplay">
+                    00:00
+                </div>
+
+                <div class="coins-earned" id="coinsEarned">
+                    Total Earned: 0 coins
+                </div>
+
+                <div class="watch-controls">
+                    <button class="btn btn-filled" id="startBtn" onclick="startWatching()" disabled>
+                        <i class="fas fa-play"></i> Start Watching
+                    </button>
+                    <button class="btn btn-outline" id="pauseBtn" onclick="pauseWatching()" disabled>
+                        <i class="fas fa-pause"></i> Pause
+                    </button>
+                    <button class="btn btn-outline" id="nextBtn" onclick="loadNextCampaign()" disabled>
+                        <i class="fas fa-forward"></i> Next Video
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Campaigns -->
+        <div class="section-header">
+            <h2 class="section-title">Available Campaigns</h2>
+            <button class="btn btn-outline btn-small" onclick="refreshCampaigns()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+
+        <div class="campaigns-list" id="campaignsList">
+            <div class="text-center p-3">
+                <div class="spinner"></div>
+                <p>Loading campaigns...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-home"></i></div>
+            <div class="nav-label">Home</div>
+        </a>
+        <a href="watch.html" class="nav-item active">
+            <div class="nav-icon"><i class="fas fa-eye"></i></div>
+            <div class="nav-label">Watch</div>
+        </a>
+        <a href="create-campaign.html" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-rocket"></i></div>
+            <div class="nav-label">Create</div>
+        </a>
+        <a href="#" class="nav-item" onclick="showProfileModal()">
+            <div class="nav-icon"><i class="fas fa-user"></i></div>
+            <div class="nav-label">Profile</div>
+        </a>
+    </nav>
+
+    <!-- Notification System -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        let currentCampaign = null;
+        let currentTimer = null;
+        let currentInterval = 0;
+        let totalEarned = 0;
+        let isWatching = false;
+        let isTabActive = true;
+        let availableCampaigns = [];
+
+        // Anti-cheat detection
+        document.addEventListener('visibilitychange', function() {
+            isTabActive = !document.hidden;
+            if (!isTabActive && isWatching) {
+                pauseWatching();
+                showNotification('Video paused: Tab not active', 'warning');
+            }
+        });
+
+        // Initialize watch page
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadAvailableCampaigns();
+            setupEventListeners();
+        });
+
+        async function loadAvailableCampaigns() {
+            const user = authManager.getCurrentUser();
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                const { data: campaigns } = await db.getActiveCampaigns(user.id);
+                availableCampaigns = campaigns || [];
+                displayCampaigns(availableCampaigns);
+            } catch (error) {
+                console.error('Error loading campaigns:', error);
+                showNotification('Error loading campaigns', 'error');
+            }
+        }
+
+        function displayCampaigns(campaigns) {
+            const container = document.getElementById('campaignsList');
+            
+            if (!campaigns || campaigns.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-3">
+                        <i class="fas fa-video-slash" style="font-size: 3rem; color: var(--gray); margin-bottom: 1rem;"></i>
+                        <h3>No Campaigns Available</h3>
+                        <p>All campaigns have been watched or no active campaigns available.</p>
+                        <button class="btn btn-filled mt-2" onclick="refreshCampaigns()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = campaigns.map(campaign => `
+                <div class="campaign-item ${currentCampaign?.id === campaign.id ? 'active' : ''}" 
+                     onclick="selectCampaign('${campaign.id}')">
+                    <div class="campaign-thumb">
+                        <i class="fab fa-youtube"></i>
+                    </div>
+                    <div class="campaign-details">
+                        <h3>${campaign.video_title || 'YouTube Campaign'}</h3>
+                        <div class="campaign-meta">
+                            <span><i class="fas fa-clock"></i> ${Math.round(campaign.video_length_sec / 60)}min</span>
+                            <span><i class="fas fa-coins"></i> ${campaign.coins_per_30s} coins/30s</span>
+                            <span><i class="fas fa-user"></i> ${campaign.users?.name || 'Unknown'}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: ${(campaign.current_intervals_completed / campaign.total_intervals) * 100}%"></div>
+                        </div>
+                        <div style="font-size: 0.9rem; color: var(--gray);">
+                            Progress: ${campaign.current_intervals_completed}/${campaign.total_intervals} intervals
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectCampaign(campaignId) {
+            const campaign = availableCampaigns.find(c => c.id === campaignId);
+            if (!campaign) return;
+
+            currentCampaign = campaign;
+            currentInterval = 0;
+            totalEarned = 0;
+
+            // Update UI
+            document.getElementById('videoTitle').textContent = campaign.video_title || 'YouTube Campaign';
+            document.getElementById('totalIntervals').textContent = campaign.total_intervals;
+            document.getElementById('completedIntervals').textContent = campaign.current_intervals_completed;
+            document.getElementById('remainingIntervals').textContent = campaign.total_intervals - campaign.current_intervals_completed;
+            document.getElementById('coinsPerInterval').textContent = campaign.coins_per_30s;
+
+            // Update video player
+            const videoPlayer = document.getElementById('videoPlayer');
+            const videoId = extractYouTubeId(campaign.video_url);
+            if (videoId) {
+                videoPlayer.innerHTML = `
+                    <iframe 
+                        width="100%" 
+                        height="100%" 
+                        src="https://www.youtube.com/embed/${videoId}?rel=0" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                `;
+            } else {
+                videoPlayer.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>Invalid YouTube URL</p>
+                    </div>
+                `;
+            }
+
+            // Update buttons
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = false;
+
+            // Update status
+            updateWatchStatus('ready', 'Ready to start watching');
+
+            // Highlight selected campaign
+            displayCampaigns(availableCampaigns);
+        }
+
+        function extractYouTubeId(url) {
+            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
+
+        function startWatching() {
+            if (!currentCampaign || !isTabActive) return;
+
+            isWatching = true;
+            let seconds = 0;
+
+            // Update UI
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('pauseBtn').disabled = false;
+            updateWatchStatus('active', 'Watching... Earn coins every 30 seconds');
+
+            // Start timer
+            currentTimer = setInterval(async () => {
+                seconds++;
+                document.getElementById('timerDisplay').textContent = formatTime(seconds);
+
+                // Every 30 seconds, award coins
+                if (seconds % 30 === 0) {
+                    await awardCoins();
+                }
+
+                // Check if campaign is completed
+                if (currentInterval >= currentCampaign.total_intervals) {
+                    stopWatching();
+                    updateWatchStatus('completed', 'Campaign completed!');
+                    showNotification('Campaign completed! You earned ' + totalEarned + ' coins', 'success');
+                }
+            }, 1000);
+        }
+
+        function pauseWatching() {
+            if (!isWatching) return;
+
+            isWatching = false;
+            clearInterval(currentTimer);
+            
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            updateWatchStatus('paused', 'Watching paused');
+        }
+
+        function stopWatching() {
+            isWatching = false;
+            clearInterval(currentTimer);
+            
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('timerDisplay').textContent = '00:00';
+        }
+
+        async function awardCoins() {
+            if (!currentCampaign) return;
+
+            currentInterval++;
+            const coinsEarned = currentCampaign.coins_per_30s;
+            totalEarned += coinsEarned;
+
+            // Update UI
+            document.getElementById('coinsEarned').textContent = `Total Earned: ${totalEarned} coins`;
+            document.getElementById('completedIntervals').textContent = currentCampaign.current_intervals_completed + currentInterval;
+            document.getElementById('remainingIntervals').textContent = currentCampaign.total_intervals - (currentCampaign.current_intervals_completed + currentInterval);
+
+            try {
+                const user = authManager.getCurrentUser();
+                
+                // Create watch log
+                await db.createWatchLog({
+                    user_id: user.id,
+                    campaign_id: currentCampaign.id,
+                    interval_no: currentCampaign.current_intervals_completed + currentInterval,
+                    coins_earned: coinsEarned,
+                    watch_duration_sec: 30
+                });
+
+                // Update user coins
+                await db.updateUserCoins(user.id, coinsEarned);
+
+                // Update campaign progress
+                await db.updateCampaignProgress(currentCampaign.id, 1);
+
+                // Update campaign owner's coins (deduct)
+                await db.updateUserCoins(currentCampaign.user_id, -coinsEarned);
+
+                showNotification(`+${coinsEarned} coins earned!`, 'success');
+
+            } catch (error) {
+                console.error('Error awarding coins:', error);
+                showNotification('Error processing coins', 'error');
+            }
+        }
+
+        function loadNextCampaign() {
+            stopWatching();
+            currentCampaign = null;
+            currentInterval = 0;
+            totalEarned = 0;
+
+            // Reset UI
+            document.getElementById('videoPlayer').innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-play-circle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <p>Select a campaign to start watching</p>
+                </div>
+            `;
+            document.getElementById('videoTitle').textContent = 'Select a Campaign';
+            document.getElementById('timerDisplay').textContent = '00:00';
+            document.getElementById('coinsEarned').textContent = 'Total Earned: 0 coins';
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+
+            updateWatchStatus('ready', 'Select a campaign to start watching');
+            displayCampaigns(availableCampaigns);
+        }
+
+        function updateWatchStatus(status, message) {
+            const statusElement = document.getElementById('watchStatus');
+            statusElement.textContent = message;
+            statusElement.className = 'watch-status';
+            
+            switch(status) {
+                case 'active':
+                    statusElement.classList.add('status-active');
+                    break;
+                case 'paused':
+                    statusElement.classList.add('status-paused');
+                    break;
+                case 'completed':
+                    statusElement.classList.add('status-active');
+                    break;
+                default:
+                    statusElement.classList.add('status-inactive');
+            }
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function refreshCampaigns() {
+            loadAvailableCampaigns();
+            showNotification('Campaigns refreshed', 'success');
+        }
+
+        function setupEventListeners() {
+            // Prevent cheating by detecting tab switching
+            window.addEventListener('blur', function() {
+                if (isWatching) {
+                    pauseWatching();
+                    showNotification('Video paused: Window not focused', 'warning');
+                }
+            });
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
