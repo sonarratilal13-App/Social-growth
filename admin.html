@@ -8,6 +8,26 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Authentication check - yeh sabse pehle run hoga
+        document.addEventListener('DOMContentLoaded', function() {
+            const isAuthenticated = localStorage.getItem('admin_authenticated');
+            const adminUsername = localStorage.getItem('admin_username');
+            
+            console.log('Auth check:', isAuthenticated, 'Username:', adminUsername);
+            
+            if (isAuthenticated !== 'true' || adminUsername !== 'rati') {
+                console.log('Redirecting to login...');
+                window.location.href = 'admin-login.html';
+                return;
+            }
+            
+            // Agar authenticated hai toh page load continue karo
+            console.log('Admin authenticated, loading panel...');
+        });
+    </script>
+    <style>
+        /* ... your existing CSS ... */ivr.net/npm/chart.js"></script>
     <style>
         :root {
             --white: #ffffff;
