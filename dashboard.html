@@ -4,23 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Social Growth</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <script src="supabase.js" defer></script>
-    <script src="auth.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        .dashboard-header {
-            background: linear-gradient(135deg, var(--green) 0%, var(--dark-green) 100%);
-            color: white;
-            padding: 1.5rem 0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        :root {
+            --white: #ffffff;
+            --green: #10B981;
+            --dark-green: #059669;
+            --black: #111827;
+            --gray: #6B7280;
+            --light-gray: #F9FAFB;
+            --card-bg: rgba(255, 255, 255, 0.8);
         }
 
-        .header-content {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--black);
+            background: linear-gradient(135deg, var(--white) 0%, var(--light-gray) 50%, var(--green) 100%);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .dashboard-header {
+            padding: 20px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -29,833 +49,836 @@
         .logo {
             display: flex;
             align-items: center;
-            font-size: 1.5rem;
             font-weight: 700;
-            color: white;
+            font-size: 1.5rem;
+            color: var(--black);
             text-decoration: none;
+        }
+
+        .logo-icon {
+            margin-right: 8px;
+            font-size: 1.8rem;
         }
 
         .user-info {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 15px;
+        }
+
+        .coin-balance {
+            background-color: var(--white);
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .coin-icon {
+            color: gold;
         }
 
         .user-avatar {
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
+            background-color: var(--green);
             display: flex;
             align-items: center;
             justify-content: center;
+            color: var(--white);
             font-weight: 600;
-            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
-        /* Dashboard Content */
-        .dashboard-content {
-            padding: 2rem 0;
-        }
-
-        /* Balance Card */
-        .balance-card {
-            background: linear-gradient(135deg, var(--white) 0%, var(--light-green) 100%);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid rgba(0, 0, 0, 0.03);
-        }
-
-        .balance-info h2 {
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
+        .logout-btn {
+            background: none;
+            border: none;
             color: var(--gray);
-            font-weight: 500;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
         }
 
-        .balance-amount {
-            font-size: 3rem;
-            font-weight: 800;
-            color: var(--black);
-            line-height: 1;
+        .logout-btn:hover {
+            background-color: rgba(0, 0, 0, 0.05);
         }
 
-        .balance-actions {
-            display: flex;
-            gap: 1rem;
-        }
-
-        /* Section Headers */
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
+        .dashboard-content {
+            margin-top: 20px;
         }
 
         .section-title {
             font-size: 1.5rem;
-            font-weight: 700;
+            margin-bottom: 20px;
+            font-weight: 600;
             color: var(--black);
         }
 
-        .view-all {
-            color: var(--green);
-            text-decoration: none;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
-        /* Campaigns Grid */
+        .stat-card {
+            background-color: var(--card-bg);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--green), var(--dark-green));
+            color: var(--white);
+        }
+
+        .stat-info h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .campaigns-section {
+            margin-bottom: 30px;
+        }
+
+        .campaigns-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: var(--green);
+            border-bottom: 2px solid var(--green);
+        }
+
         .campaigns-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
+            gap: 20px;
         }
 
         .campaign-card {
-            background: var(--white);
+            background-color: var(--card-bg);
+            backdrop-filter: blur(10px);
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: var(--card-shadow);
-            transition: all 0.3s ease;
-            border: 1px solid rgba(0, 0, 0, 0.03);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
         }
 
         .campaign-card:hover {
             transform: translateY(-5px);
-            box-shadow: var(--hover-shadow);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
-        .campaign-image {
+        .campaign-thumbnail {
             height: 160px;
-            background: linear-gradient(135deg, var(--light-green), var(--green));
+            background: linear-gradient(135deg, var(--green), var(--dark-green));
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            color: var(--white);
             font-size: 3rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .campaign-image::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(0,0,0,0.1), transparent);
         }
 
         .campaign-info {
-            padding: 1.5rem;
+            padding: 20px;
         }
 
         .campaign-title {
-            font-size: 1.2rem;
             font-weight: 600;
-            margin-bottom: 0.75rem;
-            color: var(--black);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
         }
 
         .campaign-stats {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 1rem;
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-
-        .progress-container {
-            margin-bottom: 1.5rem;
-        }
-
-        .progress-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
+            margin-bottom: 15px;
             font-size: 0.9rem;
             color: var(--gray);
         }
 
         .progress-bar {
             height: 8px;
-            background: var(--light-gray);
-            border-radius: 10px;
+            background-color: #E5E7EB;
+            border-radius: 4px;
             overflow: hidden;
+            margin-bottom: 15px;
         }
 
         .progress {
             height: 100%;
-            background: linear-gradient(90deg, var(--green), var(--dark-green));
-            border-radius: 10px;
+            background: linear-gradient(to right, var(--green), var(--dark-green));
+            border-radius: 4px;
         }
 
         .campaign-actions {
             display: flex;
-            gap: 0.75rem;
+            justify-content: space-between;
         }
 
-        /* Quick Actions */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
-        }
-
-        .action-card {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 1.5rem;
-            text-align: center;
-            box-shadow: var(--card-shadow);
-            transition: all 0.3s ease;
+        .btn {
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: 500;
             cursor: pointer;
-            border: 1px solid rgba(0, 0, 0, 0.03);
-        }
-
-        .action-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--hover-shadow);
-        }
-
-        .action-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--light-green), var(--green));
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
-            font-size: 1.5rem;
-            color: white;
-        }
-
-        .action-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--black);
-        }
-
-        .action-description {
-            color: var(--gray);
+            transition: all 0.3s;
+            border: none;
             font-size: 0.9rem;
         }
 
-        /* Referral Section */
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--green);
+            color: var(--green);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--green);
+            color: var(--white);
+        }
+
+        .btn-primary {
+            background-color: var(--green);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--dark-green);
+        }
+
         .referral-section {
-            background: linear-gradient(135deg, var(--white) 0%, var(--light-green) 100%);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 2.5rem;
+            background-color: var(--card-bg);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .referral-content {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            border: 1px solid rgba(0, 0, 0, 0.03);
+            justify-content: space-between;
+            gap: 20px;
         }
 
         .referral-info h3 {
-            font-size: 1.5rem;
-            margin-bottom: 0.75rem;
-            color: var(--black);
-            font-weight: 700;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
         }
 
         .referral-info p {
             color: var(--gray);
-            margin-bottom: 1.5rem;
-            max-width: 500px;
+            margin-bottom: 15px;
         }
 
         .referral-code {
-            background: var(--white);
-            border: 2px dashed var(--green);
-            border-radius: 12px;
-            padding: 1rem 1.5rem;
+            background-color: var(--white);
+            padding: 10px 15px;
+            border-radius: 8px;
             font-family: monospace;
-            font-size: 1.2rem;
-            font-weight: 700;
-            text-align: center;
-            color: var(--black);
+            font-weight: 600;
             display: inline-block;
+            margin-bottom: 15px;
+            border: 1px dashed var(--green);
         }
 
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
+        .referral-stats {
+            display: flex;
+            gap: 20px;
         }
 
-        .stat-card {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 1.5rem;
+        .referral-stat {
             text-align: center;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(0, 0, 0, 0.03);
         }
 
-        .stat-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--light-green), var(--green));
-            border-radius: 12px;
+        .referral-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        .referral-stat-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .notifications-section {
+            background-color: var(--card-bg);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .notification {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .notification:last-child {
+            border-bottom: none;
+        }
+
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(16, 185, 129, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1rem;
-            font-size: 1.2rem;
-            color: white;
+            color: var(--green);
+            flex-shrink: 0;
         }
 
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--black);
-            margin-bottom: 0.5rem;
+        .notification-content h4 {
+            font-size: 1rem;
+            margin-bottom: 5px;
         }
 
-        .stat-label {
+        .notification-content p {
             color: var(--gray);
             font-size: 0.9rem;
         }
 
+        .notification-time {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--white);
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--gray);
+            transition: color 0.3s;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--green);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .nav-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--green);
+        }
+
         @media (max-width: 768px) {
-            .balance-card {
+            .dashboard-header {
                 flex-direction: column;
+                gap: 15px;
                 align-items: flex-start;
-                gap: 1.5rem;
             }
 
-            .balance-actions {
+            .user-info {
                 width: 100%;
+                justify-content: space-between;
             }
 
-            .btn {
-                flex: 1;
-                text-align: center;
-            }
-
-            .referral-section {
+            .referral-content {
                 flex-direction: column;
-                gap: 1.5rem;
                 text-align: center;
+            }
+
+            .referral-stats {
+                justify-content: center;
             }
 
             .campaigns-grid {
                 grid-template-columns: 1fr;
             }
-
-            .quick-actions {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .quick-actions {
-                grid-template-columns: 1fr;
-            }
-            
-            .user-info span {
-                display: none;
-            }
-
-            .balance-amount {
-                font-size: 2.5rem;
-            }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="dashboard-header">
-        <div class="container header-content">
-            <a href="dashboard.html" class="logo">
-                <span class="logo-icon">📈</span>
-                Social Growth
-            </a>
-            <div class="user-info">
-                <span data-user-name>Loading...</span>
-                <div class="user-avatar" data-user-avatar>U</div>
-                <button class="btn btn-outline btn-small" onclick="handleLogout()" style="background: rgba(255,255,255,0.2); color: white; border-color: white;">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
+    <div class="dashboard-header container">
+        <a href="#" class="logo">
+            <span class="logo-icon">🚀</span>
+            Social Growth
+        </a>
+        <div class="user-info">
+            <div class="coin-balance">
+                <i class="fas fa-coins coin-icon"></i>
+                <span id="coin-count">0</span>
             </div>
+            <div class="user-avatar" id="user-avatar">
+                U
+            </div>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
         </div>
-    </header>
+    </div>
 
-    <!-- Dashboard Content -->
-    <div class="container dashboard-content">
-        <!-- Balance Card -->
-        <div class="balance-card fade-in">
-            <div class="balance-info">
-                <h2>Your Coin Balance</h2>
-                <div class="balance-amount" id="coinBalance">0</div>
-            </div>
-            <div class="balance-actions">
-                <button class="btn btn-primary" onclick="showBuyCoinsModal()">
-                    <i class="fas fa-shopping-cart"></i> Buy Coins
-                </button>
-                <a href="create-campaign.html" class="btn btn-outline">
-                    <i class="fas fa-plus"></i> Create Campaign
-                </a>
-            </div>
-        </div>
-
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-play-circle"></i>
-                </div>
-                <div class="stat-number" id="activeCampaigns">0</div>
-                <div class="stat-label">Active Campaigns</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-eye"></i>
-                </div>
-                <div class="stat-number" id="totalWatches">0</div>
-                <div class="stat-label">Videos Watched</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-number" id="totalReferrals">0</div>
-                <div class="stat-label">Referrals</div>
-            </div>
+    <div class="dashboard-content container">
+        <div class="stats-cards">
             <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fas fa-coins"></i>
                 </div>
-                <div class="stat-number" id="totalEarned">0</div>
-                <div class="stat-label">Coins Earned</div>
+                <div class="stat-info">
+                    <h3 id="total-coins">0</h3>
+                    <p>Total Coins</p>
+                </div>
             </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="section-header">
-            <h2 class="section-title">Quick Actions</h2>
-        </div>
-        
-        <div class="quick-actions">
-            <div class="action-card fade-in" onclick="navigateToWatch()">
-                <div class="action-icon">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="active-campaigns">0</h3>
+                    <p>Active Campaigns</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
                     <i class="fas fa-eye"></i>
                 </div>
-                <div class="action-title">Watch Videos</div>
-                <div class="action-description">Earn 3 coins every 30 seconds</div>
-            </div>
-            
-            <div class="action-card fade-in" onclick="window.location.href='create-campaign.html'">
-                <div class="action-icon">
-                    <i class="fas fa-rocket"></i>
+                <div class="stat-info">
+                    <h3 id="videos-watched">0</h3>
+                    <p>Videos Watched</p>
                 </div>
-                <div class="action-title">Create Campaign</div>
-                <div class="action-description">Boost your YouTube videos</div>
             </div>
-            
-            <div class="action-card fade-in" onclick="showReferralsModal()">
-                <div class="action-icon">
-                    <i class="fas fa-users"></i>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-user-friends"></i>
                 </div>
-                <div class="action-title">Refer Friends</div>
-                <div class="action-description">Earn 50 coins per referral</div>
-            </div>
-            
-            <div class="action-card fade-in" onclick="showAnalytics()">
-                <div class="action-icon">
-                    <i class="fas fa-chart-bar"></i>
+                <div class="stat-info">
+                    <h3 id="referrals-count">0</h3>
+                    <p>Referrals</p>
                 </div>
-                <div class="action-title">Analytics</div>
-                <div class="action-description">View your performance</div>
             </div>
         </div>
 
-        <!-- Active Campaigns -->
-        <div class="section-header">
-            <h2 class="section-title">Active Campaigns</h2>
-            <a href="#" class="view-all" onclick="viewAllCampaigns()">
-                View All <i class="fas fa-chevron-right"></i>
-            </a>
-        </div>
-        
-        <div class="campaigns-grid" id="activeCampaignsGrid">
-            <!-- Campaigns will be loaded here -->
-            <div class="text-center p-3">
-                <div class="spinner"></div>
-                <p>Loading campaigns...</p>
+        <div class="campaigns-section">
+            <h2 class="section-title">Your Campaigns</h2>
+            <div class="campaigns-tabs">
+                <div class="tab active" data-tab="active">Active</div>
+                <div class="tab" data-tab="completed">Completed</div>
+            </div>
+            <div class="campaigns-grid" id="campaigns-container">
+                <div class="empty-state">
+                    <i class="fas fa-video"></i>
+                    <h3>No campaigns yet</h3>
+                    <p>Create your first campaign to get started!</p>
+                </div>
             </div>
         </div>
 
-        <!-- Referral Section -->
-        <div class="referral-section fade-in">
-            <div class="referral-info">
-                <h3>Invite Friends & Earn More</h3>
-                <p>Share your referral code and get 50 coins when your friends join and watch their first campaign.</p>
-                <div class="referral-code" id="userReferralCode">Loading...</div>
+        <div class="referral-section">
+            <div class="referral-content">
+                <div class="referral-info">
+                    <h3>Invite Friends & Earn More</h3>
+                    <p>Share your referral code and earn 50 coins when your friends join and watch their first campaign.</p>
+                    <div class="referral-code" id="referral-code">Loading...</div>
+                    <button class="btn btn-primary" id="copy-referral-btn">Copy Referral Link</button>
+                </div>
+                <div class="referral-stats">
+                    <div class="referral-stat">
+                        <div class="referral-stat-value" id="referrals-count-stat">0</div>
+                        <div class="referral-stat-label">Referred</div>
+                    </div>
+                    <div class="referral-stat">
+                        <div class="referral-stat-value" id="referral-coins">0</div>
+                        <div class="referral-stat-label">Coins Earned</div>
+                    </div>
+                </div>
             </div>
-            <button class="btn btn-primary" onclick="shareReferral()">
-                <i class="fas fa-share-alt"></i> Share Code
-            </button>
         </div>
 
-        <!-- Recent Activity -->
-        <div class="section-header">
-            <h2 class="section-title">Recent Activity</h2>
-        </div>
-        
-        <div class="card">
-            <div id="recentActivity">
-                <div class="text-center p-3">
-                    <div class="spinner"></div>
-                    <p>Loading activity...</p>
+        <div class="notifications-section">
+            <h2 class="section-title">Notifications</h2>
+            <div id="notifications-container">
+                <div class="empty-state">
+                    <i class="fas fa-bell"></i>
+                    <h3>No notifications</h3>
+                    <p>You're all caught up!</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Bottom Navigation -->
     <nav class="bottom-nav">
         <a href="dashboard.html" class="nav-item active">
-            <div class="nav-icon"><i class="fas fa-home"></i></div>
-            <div class="nav-label">Home</div>
+            <i class="fas fa-home nav-icon"></i>
+            <span class="nav-label">Dashboard</span>
         </a>
         <a href="watch.html" class="nav-item">
-            <div class="nav-icon"><i class="fas fa-eye"></i></div>
-            <div class="nav-label">Watch</div>
+            <i class="fas fa-play-circle nav-icon"></i>
+            <span class="nav-label">Watch</span>
         </a>
         <a href="create-campaign.html" class="nav-item">
-            <div class="nav-icon"><i class="fas fa-rocket"></i></div>
-            <div class="nav-label">Create</div>
+            <i class="fas fa-plus-circle nav-icon"></i>
+            <span class="nav-label">Create</span>
         </a>
-        <a href="#" class="nav-item" onclick="showProfileModal()">
-            <div class="nav-icon"><i class="fas fa-user"></i></div>
-            <div class="nav-label">Profile</div>
+        <a href="buy-coins.html" class="nav-item">
+            <i class="fas fa-shopping-cart nav-icon"></i>
+            <span class="nav-label">Buy Coins</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fas fa-user nav-icon"></i>
+            <span class="nav-label">Profile</span>
         </a>
     </nav>
 
-    <!-- Buy Coins Modal -->
-    <div class="modal" id="buyCoinsModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Buy Coins</h3>
-                <button class="modal-close" onclick="hideModal('buyCoinsModal')">&times;</button>
-            </div>
-            <form onsubmit="handleCoinPurchase(event)">
-                <div class="form-group">
-                    <label class="form-label">Select Package</label>
-                    <div class="coin-packages">
-                        <div class="coin-package card p-2 mb-2" onclick="selectPackage(100, 10)">
-                            <div class="d-flex justify-between align-center">
-                                <div>
-                                    <h4>100 Coins</h4>
-                                    <p>₹10</p>
-                                </div>
-                                <i class="fas fa-check-circle" style="color: var(--green); display: none;"></i>
-                            </div>
-                        </div>
-                        <div class="coin-package card p-2 mb-2" onclick="selectPackage(500, 50)">
-                            <div class="d-flex justify-between align-center">
-                                <div>
-                                    <h4>500 Coins</h4>
-                                    <p>₹50</p>
-                                </div>
-                                <i class="fas fa-check-circle" style="color: var(--green); display: none;"></i>
-                            </div>
-                        </div>
-                        <div class="coin-package card p-2" onclick="selectPackage(1200, 100)">
-                            <div class="d-flex justify-between align-center">
-                                <div>
-                                    <h4>1200 Coins</h4>
-                                    <p>₹100</p>
-                                </div>
-                                <i class="fas fa-check-circle" style="color: var(--green); display: none;"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="referenceId">UPI Reference ID</label>
-                    <input type="text" class="form-input" id="referenceId" required placeholder="Enter UPI transaction reference">
-                </div>
-                <div class="form-group">
-                    <p class="referral-field">
-                        <strong>UPI ID:</strong> sonarratilal@okicici<br>
-                        <strong>Amount:</strong> ₹<span id="selectedAmount">0</span><br>
-                        <strong>Coins:</strong> <span id="selectedCoins">0</span>
-                    </p>
-                </div>
-                <button type="submit" class="btn btn-filled w-100">
-                    <i class="fas fa-paper-plane"></i> Submit Payment Request
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Notification System -->
-    <div class="notification" id="notification"></div>
-
     <script>
-        let selectedPackage = { coins: 0, amount: 0 };
+        // Initialize Supabase
+        const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', async function() {
-            await loadDashboardData();
-            
-            // Set up real-time subscription for user profile updates
-            const user = authManager.getCurrentUser();
-            if (user) {
-                const subscription = supabase
-                    .channel('user_changes')
-                    .on('postgres_changes', 
-                        { 
-                            event: 'UPDATE', 
-                            schema: 'public', 
-                            table: 'users',
-                            filter: `id=eq.${user.id}`
-                        }, 
-                        async (payload) => {
-                            await loadDashboardData();
-                        }
-                    )
-                    .subscribe();
+        let currentUser = null;
+
+        // Check authentication
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (!session) {
+                window.location.href = 'login.html';
+            } else {
+                currentUser = session.user;
+                loadDashboardData();
+                setupRealtimeUpdates();
             }
         });
 
         async function loadDashboardData() {
-            const user = authManager.getCurrentUser();
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
-            }
+            if (!currentUser) return;
 
             try {
-                // Load user profile and balance
-                const profile = authManager.getUserProfile();
-                if (profile) {
-                    document.getElementById('coinBalance').textContent = profile.coins || 0;
-                    document.getElementById('userReferralCode').textContent = profile.referral_code || 'Not available';
-                }
+                // Load user data
+                const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', currentUser.id)
+                    .single();
 
-                // Load user campaigns
-                const { data: campaigns } = await db.getUserCampaigns(user.id);
-                const activeCampaigns = campaigns?.filter(c => c.status === 'active') || [];
-                document.getElementById('activeCampaigns').textContent = activeCampaigns.length;
+                if (userError) throw userError;
 
-                // Display active campaigns
-                displayActiveCampaigns(activeCampaigns);
+                // Update user info
+                document.getElementById('coin-count').textContent = userData.coins;
+                document.getElementById('total-coins').textContent = userData.coins;
+                document.getElementById('user-avatar').textContent = userData.name ? userData.name.charAt(0).toUpperCase() : 'U';
+                document.getElementById('referral-code').textContent = userData.referral_code;
 
-                // Load user stats
-                const { data: watchLogs } = await db.getUserWatchLogs(user.id);
-                const totalWatches = watchLogs?.length || 0;
-                const totalEarned = watchLogs?.reduce((sum, log) => sum + log.coins_earned, 0) || 0;
-                
-                document.getElementById('totalWatches').textContent = totalWatches;
-                document.getElementById('totalEarned').textContent = totalEarned;
+                // Load campaigns
+                await loadCampaigns('active');
 
-                // Load referrals
-                const { data: referrals } = await db.getUserReferrals(user.id);
-                document.getElementById('totalReferrals').textContent = referrals?.length || 0;
+                // Load stats
+                await loadStats();
 
-                // Load recent activity
-                displayRecentActivity(watchLogs);
+                // Load notifications
+                await loadNotifications();
 
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
-                showNotification('Error loading dashboard data', 'error');
             }
         }
 
-        function displayActiveCampaigns(campaigns) {
-            const grid = document.getElementById('activeCampaignsGrid');
-            
-            if (!campaigns || campaigns.length === 0) {
-                grid.innerHTML = `
-                    <div class="text-center p-3">
-                        <i class="fas fa-video" style="font-size: 3rem; color: var(--gray); margin-bottom: 1rem;"></i>
-                        <h3>No Active Campaigns</h3>
-                        <p>Create your first campaign to get started!</p>
-                        <a href="create-campaign.html" class="btn btn-filled mt-2">
-                            <i class="fas fa-plus"></i> Create Campaign
-                        </a>
-                    </div>
-                `;
-                return;
-            }
+        async function loadCampaigns(status) {
+            if (!currentUser) return;
 
-            grid.innerHTML = campaigns.map(campaign => `
-                <div class="campaign-card">
-                    <div class="campaign-image">
-                        <i class="fas fa-play-circle"></i>
-                    </div>
-                    <div class="campaign-info">
-                        <div class="campaign-title">${campaign.video_url ? 'YouTube Campaign' : 'Untitled Campaign'}</div>
-                        <div class="campaign-stats">
-                            <span>Coins: ${campaign.total_intervals * 3}</span>
-                            <span>Progress: ${Math.round((campaign.current_intervals_completed / campaign.total_intervals) * 100)}%</span>
+            try {
+                const { data: campaigns, error } = await supabase
+                    .from('campaigns')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .eq('status', status)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const container = document.getElementById('campaigns-container');
+                
+                if (!campaigns || campaigns.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-video"></i>
+                            <h3>No ${status} campaigns</h3>
+                            <p>${status === 'active' ? 'Create your first campaign to get started!' : 'No completed campaigns yet.'}</p>
                         </div>
-                        <div class="progress-container">
-                            <div class="progress-label">
-                                <span>Completion</span>
-                                <span>${Math.round((campaign.current_intervals_completed / campaign.total_intervals) * 100)}%</span>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = campaigns.map(campaign => `
+                    <div class="campaign-card">
+                        <div class="campaign-thumbnail">
+                            <i class="fas fa-play-circle"></i>
+                        </div>
+                        <div class="campaign-info">
+                            <h3 class="campaign-title">${campaign.video_title || 'Untitled Campaign'}</h3>
+                            <div class="campaign-stats">
+                                <span>${campaign.current_intervals_completed}/${campaign.total_intervals} intervals</span>
+                                <span>${campaign.total_coins_spent || 0} coins spent</span>
                             </div>
                             <div class="progress-bar">
                                 <div class="progress" style="width: ${(campaign.current_intervals_completed / campaign.total_intervals) * 100}%"></div>
                             </div>
+                            <div class="campaign-actions">
+                                <button class="btn btn-outline" onclick="viewCampaign('${campaign.id}')">View Details</button>
+                                ${status === 'active' ? `<button class="btn btn-primary" onclick="boostCampaign('${campaign.id}')">Boost</button>` : ''}
+                            </div>
                         </div>
-                        <div class="campaign-actions">
-                            <button class="btn btn-primary btn-small" onclick="viewCampaign('${campaign.id}')">View Details</button>
-                            <button class="btn btn-outline btn-small" onclick="pauseCampaign('${campaign.id}')">Pause</button>
-                        </div>
                     </div>
-                </div>
-            `).join('');
-        }
-
-        function displayRecentActivity(watchLogs) {
-            const container = document.getElementById('recentActivity');
-            
-            if (!watchLogs || watchLogs.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center p-3">
-                        <i class="fas fa-history" style="font-size: 3rem; color: var(--gray); margin-bottom: 1rem;"></i>
-                        <p>No recent activity</p>
-                    </div>
-                `;
-                return;
+                `).join('');
+            } catch (error) {
+                console.error('Error loading campaigns:', error);
             }
-
-            const recentItems = watchLogs.slice(0, 5).map(log => `
-                <div class="d-flex justify-between align-center p-2" style="border-bottom: 1px solid var(--light-gray);">
-                    <div>
-                        <strong>+${log.coins_earned} coins</strong>
-                        <p style="margin: 0; color: var(--gray); font-size: 0.9rem;">
-                            Watched campaign video
-                        </p>
-                    </div>
-                    <div style="color: var(--gray); font-size: 0.9rem;">
-                        ${new Date(log.timestamp).toLocaleDateString()}
-                    </div>
-                </div>
-            `).join('');
-
-            container.innerHTML = recentItems;
         }
 
-        function selectPackage(coins, amount) {
-            selectedPackage = { coins, amount };
-            
-            // Update UI
-            document.querySelectorAll('.coin-package').forEach(pkg => {
-                pkg.style.border = '2px solid transparent';
-                pkg.querySelector('.fa-check-circle').style.display = 'none';
-            });
-            
-            event.currentTarget.style.border = '2px solid var(--green)';
-            event.currentTarget.querySelector('.fa-check-circle').style.display = 'block';
-            
-            document.getElementById('selectedCoins').textContent = coins;
-            document.getElementById('selectedAmount').textContent = amount;
-        }
-
-        async function handleCoinPurchase(event) {
-            event.preventDefault();
-            
-            if (selectedPackage.coins === 0) {
-                showNotification('Please select a coin package', 'error');
-                return;
-            }
-
-            const referenceId = document.getElementById('referenceId').value;
-            const user = authManager.getCurrentUser();
+        async function loadStats() {
+            if (!currentUser) return;
 
             try {
-                await db.createPaymentRequest({
-                    user_id: user.id,
-                    amount: selectedPackage.amount,
-                    reference_id: referenceId,
-                    status: 'pending',
-                    coins: selectedPackage.coins
-                });
+                // Active campaigns count
+                const { count: activeCount } = await supabase
+                    .from('campaigns')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', currentUser.id)
+                    .eq('status', 'active');
 
-                hideModal('buyCoinsModal');
-                showNotification('Payment request submitted! It will be processed within 24 hours.', 'success');
+                document.getElementById('active-campaigns').textContent = activeCount || 0;
+
+                // Videos watched count
+                const { count: watchedCount } = await supabase
+                    .from('watch_logs')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', currentUser.id);
+
+                document.getElementById('videos-watched').textContent = watchedCount || 0;
+
+                // Referrals count
+                const { count: referralsCount } = await supabase
+                    .from('referrals')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('inviter_id', currentUser.id);
+
+                document.getElementById('referrals-count').textContent = referralsCount || 0;
+                document.getElementById('referrals-count-stat').textContent = referralsCount || 0;
+
+                // Referral coins earned
+                const { data: referrals } = await supabase
+                    .from('referrals')
+                    .select('bonus_coins')
+                    .eq('inviter_id', currentUser.id);
+
+                const totalReferralCoins = referrals ? referrals.reduce((sum, ref) => sum + ref.bonus_coins, 0) : 0;
+                document.getElementById('referral-coins').textContent = totalReferralCoins;
+
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadNotifications() {
+            if (!currentUser) return;
+
+            try {
+                const { data: notifications, error } = await supabase
+                    .from('notifications')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('timestamp', { ascending: false })
+                    .limit(10);
+
+                if (error) throw error;
+
+                const container = document.getElementById('notifications-container');
                 
-                // Reset form
-                document.getElementById('referenceId').value = '';
-                selectedPackage = { coins: 0, amount: 0 };
-                document.querySelectorAll('.coin-package').forEach(pkg => {
-                    pkg.style.border = '2px solid transparent';
-                    pkg.querySelector('.fa-check-circle').style.display = 'none';
-                });
-
-            } catch (error) {
-                showNotification('Error submitting payment request: ' + error.message, 'error');
-            }
-        }
-
-        function showBuyCoinsModal() {
-            showModal('buyCoinsModal');
-        }
-
-        function showModal(modalId) {
-            document.getElementById(modalId).classList.add('show');
-        }
-
-        function hideModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
-        }
-
-        function navigateToWatch() {
-            window.location.href = 'watch.html';
-        }
-
-        async function handleLogout() {
-            try {
-                await authManager.signOut();
-                window.location.href = 'index.html';
-            } catch (error) {
-                showNotification('Error during logout', 'error');
-            }
-        }
-
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type}`;
-            notification.classList.add('show');
-
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 5000);
-        }
-
-        // Close modals when clicking outside
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.remove('show');
+                if (!notifications || notifications.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-bell"></i>
+                            <h3>No notifications</h3>
+                            <p>You're all caught up!</p>
+                        </div>
+                    `;
+                    return;
                 }
+
+                container.innerHTML = notifications.map(notification => `
+                    <div class="notification">
+                        <div class="notification-icon">
+                            <i class="fas fa-${getNotificationIcon(notification.type)}"></i>
+                        </div>
+                        <div class="notification-content">
+                            <h4>${notification.title}</h4>
+                            <p>${notification.message}</p>
+                            <div class="notification-time">${formatTime(notification.timestamp)}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        function getNotificationIcon(type) {
+            const icons = {
+                'success': 'check-circle',
+                'error': 'exclamation-circle',
+                'info': 'info-circle',
+                'warning': 'exclamation-triangle'
+            };
+            return icons[type] || 'bell';
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            return date.toLocaleDateString();
+        }
+
+        function setupRealtimeUpdates() {
+            // Real-time subscription for user coins updates
+            supabase
+                .channel('user-updates')
+                .on('postgres_changes', 
+                    { event: 'UPDATE', schema: 'public', table: 'users', filter: `id=eq.${currentUser.id}` },
+                    (payload) => {
+                        document.getElementById('coin-count').textContent = payload.new.coins;
+                        document.getElementById('total-coins').textContent = payload.new.coins;
+                    }
+                )
+                .subscribe();
+
+            // Real-time subscription for notifications
+            supabase
+                .channel('notification-updates')
+                .on('postgres_changes', 
+                    { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${currentUser.id}` },
+                    () => {
+                        loadNotifications();
+                    }
+                )
+                .subscribe();
+        }
+
+        // Tab functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    const tabType = this.getAttribute('data-tab');
+                    loadCampaigns(tabType);
+                });
+            });
+
+            // Copy referral code
+            document.getElementById('copy-referral-btn').addEventListener('click', function() {
+                const referralCode = document.getElementById('referral-code').textContent;
+                const referralLink = `${window.location.origin}/signup.html?ref=${referralCode}`;
+                
+                navigator.clipboard.writeText(referralLink)
+                    .then(() => {
+                        const originalText = this.textContent;
+                        this.textContent = 'Copied!';
+                        setTimeout(() => {
+                            this.textContent = originalText;
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy: ', err);
+                    });
             });
         });
+
+        function viewCampaign(campaignId) {
+            // Implement campaign details view
+            alert('Campaign details feature coming soon!');
+        }
+
+        function boostCampaign(campaignId) {
+            // Implement campaign boosting
+            alert('Campaign boost feature coming soon!');
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
     </script>
 </body>
 </html>
