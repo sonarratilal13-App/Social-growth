@@ -4,57 +4,294 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Social Growth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: Arial, sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh; display: flex; align-items: center; justify-content: center;
+        :root {
+            --white: #ffffff;
+            --green: #10B981;
+            --dark-green: #059669;
+            --black: #111827;
+            --gray: #6B7280;
+            --light-gray: #F9FAFB;
         }
-        .login-box {
-            background: white; padding: 40px; border-radius: 10px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 400px; text-align: center;
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        h2 { margin-bottom: 20px; color: #333; }
-        input { 
-            width: 100%; padding: 12px; margin: 10px 0; 
-            border: 1px solid #ddd; border-radius: 5px; 
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--black);
+            background: linear-gradient(135deg, var(--white) 0%, var(--light-gray) 50%, var(--green) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
-        button { 
-            width: 100%; padding: 12px; background: #667eea; 
-            color: white; border: none; border-radius: 5px; 
-            cursor: pointer; margin-top: 10px;
+
+        .auth-container {
+            background-color: var(--white);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
         }
-        button:hover { background: #764ba2; }
-        .error { color: red; margin-top: 10px; display: none; }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: var(--black);
+            margin-bottom: 30px;
+        }
+
+        .logo-icon {
+            margin-right: 10px;
+            font-size: 2rem;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--black);
+            font-weight: 600;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--gray);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--black);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background-color: var(--green);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--dark-green);
+        }
+
+        .btn-primary:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+        }
+
+        .user-login {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        .user-login a {
+            color: var(--green);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .user-login a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-error {
+            background-color: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+
+        .admin-notice {
+            background-color: #FEF3C7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #F59E0B;
+        }
+
+        .admin-notice h3 {
+            color: #92400E;
+            margin-bottom: 5px;
+        }
+
+        .admin-notice p {
+            color: #92400E;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
-    <div class="login-box">
-        <h2>Admin Login</h2>
-        <input type="text" id="username" placeholder="Username" value="rati">
-        <input type="password" id="password" placeholder="Password" value="rati73">
-        <button onclick="login()">Login</button>
-        <div id="error" class="error">Invalid credentials!</div>
+    <div class="auth-container">
+        <div class="logo">
+            <span class="logo-icon">🚀</span>
+            Social Growth - Admin
+        </div>
+        
+        <h1>Admin Login</h1>
+        <p class="subtitle">Access the admin dashboard</p>
+
+        <div class="admin-notice">
+            <h3>Admin Access Only</h3>
+            <p>This login is restricted to authorized administrators only.</p>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Admin Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                Sign In as Admin
+            </button>
+        </form>
+
+        <div class="user-login">
+            <a href="login.html">← Back to User Login</a>
+        </div>
     </div>
 
     <script>
-        function login() {
-            const username = document.getElementById('username').value;
+        // Initialize Supabase
+        const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Check if user is already logged in as admin
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                // Check if user is admin
+                supabase
+                    .from('users')
+                    .select('is_admin')
+                    .eq('id', session.user.id)
+                    .single()
+                    .then(({ data: userData }) => {
+                        if (userData && userData.is_admin) {
+                            window.location.href = 'admin.html';
+                        }
+                    });
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const alert = document.getElementById('alert');
+            
+            // Get form values
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             
-            if (username === 'rati' && password === 'rati73') {
-                localStorage.setItem('admin', 'true');
-                window.location.href = 'admin.html';
-            } else {
-                document.getElementById('error').style.display = 'block';
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing In...';
+            
+            try {
+                // Sign in user with Supabase Auth
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) throw error;
+                
+                if (data.user) {
+                    // Check if user is admin
+                    const { data: userData, error: userError } = await supabase
+                        .from('users')
+                        .select('is_admin')
+                        .eq('id', data.user.id)
+                        .single();
+                    
+                    if (userError) throw userError;
+                    
+                    if (!userData.is_admin) {
+                        throw new Error('Access denied. Admin privileges required.');
+                    }
+                    
+                    // Redirect to admin panel
+                    window.location.href = 'admin.html';
+                }
+                
+            } catch (error) {
+                console.error('Admin login error:', error);
+                showAlert(error.message || 'Invalid email or password', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In as Admin';
             }
-        }
-        
-        // Enter key support
-        document.getElementById('password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') login();
         });
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
     </script>
 </body>
 </html>
