@@ -4,137 +4,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - Social Growth</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <script src="supabase.js" defer></script>
-    <script src="auth.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        :root {
+            --white: #ffffff;
+            --green: #10B981;
+            --dark-green: #059669;
+            --black: #111827;
+            --gray: #6B7280;
+            --light-gray: #F9FAFB;
+            --card-bg: rgba(255, 255, 255, 0.8);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--black);
+            background: linear-gradient(135deg, var(--white) 0%, var(--light-gray) 50%, var(--green) 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
         .admin-header {
-            background: linear-gradient(135deg, var(--dark-green) 0%, #064E3B 100%);
-            color: white;
-            padding: 1.5rem 0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--black);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            margin-right: 8px;
+            font-size: 1.8rem;
         }
 
         .admin-nav {
-            background: var(--white);
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--light-gray);
-        }
-
-        .nav-tabs {
             display: flex;
-            gap: 2rem;
+            gap: 20px;
         }
 
         .nav-tab {
-            padding: 0.5rem 1rem;
-            background: none;
-            border: none;
-            font-weight: 600;
-            color: var(--gray);
+            padding: 10px 20px;
             cursor: pointer;
+            font-weight: 500;
             border-radius: 8px;
             transition: all 0.3s;
         }
 
         .nav-tab.active {
-            background: var(--green);
-            color: white;
+            background-color: var(--green);
+            color: var(--white);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(0, 0, 0, 0.05);
         }
 
         .admin-content {
-            padding: 2rem 0;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: var(--white);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: var(--card-shadow);
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--black);
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-
-        .table-container {
-            background: var(--white);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 2rem;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--light-gray);
-        }
-
-        th {
-            background: var(--light-gray);
-            font-weight: 600;
-            color: var(--black);
-        }
-
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .status-pending {
-            background: #FEF3C7;
-            color: #D97706;
-        }
-
-        .status-approved {
-            background: #D1FAE5;
-            color: #047857;
-        }
-
-        .status-rejected {
-            background: #FEE2E2;
-            color: #DC2626;
-        }
-
-        .status-active {
-            background: #D1FAE5;
-            color: #047857;
-        }
-
-        .status-completed {
-            background: #E0E7FF;
-            color: #3730A3;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 0.5rem;
+            margin-top: 30px;
         }
 
         .tab-content {
@@ -144,258 +110,709 @@
         .tab-content.active {
             display: block;
         }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: var(--black);
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--green), var(--dark-green));
+            color: var(--white);
+        }
+
+        .stat-info h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .data-table {
+            background-color: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .table-header {
+            padding: 20px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--gray);
+            background-color: #F9FAFB;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 0.9rem;
+            margin-right: 5px;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+
+        .btn-success {
+            background-color: var(--green);
+            color: var(--white);
+        }
+
+        .btn-success:hover {
+            background-color: var(--dark-green);
+        }
+
+        .btn-danger {
+            background-color: #EF4444;
+            color: var(--white);
+        }
+
+        .btn-danger:hover {
+            background-color: #DC2626;
+        }
+
+        .btn-warning {
+            background-color: #F59E0B;
+            color: var(--white);
+        }
+
+        .btn-warning:hover {
+            background-color: #D97706;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: #FEF3C7;
+            color: #D97706;
+        }
+
+        .status-approved {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+
+        .status-rejected {
+            background-color: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .status-active {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+
+        .status-completed {
+            background-color: #E0E7FF;
+            color: #3730A3;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background-color: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+
+        .alert-error {
+            background-color: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--green);
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        select, input {
+            padding: 8px 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .admin-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .stats-cards {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- Admin Header -->
-    <header class="admin-header">
-        <div class="container header-content">
-            <a href="admin.html" class="logo">
-                <span class="logo-icon">📈</span>
+    <div class="admin-header">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="logo">
+                <span class="logo-icon">🚀</span>
                 Social Growth - Admin
-            </a>
+            </div>
+            
+            <div class="admin-nav">
+                <div class="nav-tab active" data-tab="dashboard">Dashboard</div>
+                <div class="nav-tab" data-tab="payments">Payments</div>
+                <div class="nav-tab" data-tab="campaigns">Campaigns</div>
+                <div class="nav-tab" data-tab="users">Users</div>
+            </div>
+
             <div class="user-info">
-                <span data-user-name>Admin</span>
-                <div class="user-avatar" data-user-avatar>A</div>
-                <button class="btn btn-outline btn-small" onclick="handleLogout()" style="background: rgba(255,255,255,0.2); color: white; border-color: white;">
+                <button class="logout-btn" onclick="logout()">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
         </div>
-    </header>
+    </div>
 
-    <!-- Admin Navigation -->
-    <nav class="admin-nav">
-        <div class="container">
-            <div class="nav-tabs">
-                <button class="nav-tab active" onclick="switchTab('dashboard')">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                </button>
-                <button class="nav-tab" onclick="switchTab('payments')">
-                    <i class="fas fa-credit-card"></i> Payments
-                </button>
-                <button class="nav-tab" onclick="switchTab('campaigns')">
-                    <i class="fas fa-video"></i> Campaigns
-                </button>
-                <button class="nav-tab" onclick="switchTab('users')">
-                    <i class="fas fa-users"></i> Users
-                </button>
-            </div>
-        </div>
-    </nav>
+    <div class="admin-content container">
+        <div id="alert" class="alert"></div>
 
-    <!-- Admin Content -->
-    <div class="container admin-content">
         <!-- Dashboard Tab -->
-        <div class="tab-content active" id="dashboardTab">
+        <div class="tab-content active" id="dashboard-tab">
             <h2 class="section-title">Admin Dashboard</h2>
             
-            <!-- Stats Overview -->
-            <div class="stats-grid">
+            <div class="stats-cards">
                 <div class="stat-card">
-                    <div class="stat-number" id="totalUsers">0</div>
-                    <div class="stat-label">Total Users</div>
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="total-users">0</h3>
+                        <p>Total Users</p>
+                    </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="totalCampaigns">0</div>
-                    <div class="stat-label">Total Campaigns</div>
+                    <div class="stat-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="total-campaigns">0</h3>
+                        <p>Total Campaigns</p>
+                    </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="activeCampaigns">0</div>
-                    <div class="stat-label">Active Campaigns</div>
+                    <div class="stat-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="total-coins">0</h3>
+                        <p>Total Coins in System</p>
+                    </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="totalRevenue">₹0</div>
-                    <div class="stat-label">Total Revenue</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="pendingPayments">0</div>
-                    <div class="stat-label">Pending Payments</div>
+                    <div class="stat-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="pending-payments">0</h3>
+                        <p>Pending Payments</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Recent Activity -->
-            <div class="section-header">
-                <h3 class="section-title">Recent Activity</h3>
-            </div>
-            <div class="card">
-                <div id="recentActivity">
-                    <div class="text-center p-3">
-                        <div class="spinner"></div>
-                        <p>Loading activity...</p>
-                    </div>
+            <div class="data-table">
+                <div class="table-header">
+                    <h3>Recent Activity</h3>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>User</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-activity">
+                            <tr>
+                                <td colspan="4" class="empty-state">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <div>Loading activity...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
         <!-- Payments Tab -->
-        <div class="tab-content" id="paymentsTab">
-            <h2 class="section-title">Payment Requests</h2>
+        <div class="tab-content" id="payments-tab">
+            <h2 class="section-title">Payment Management</h2>
             
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Amount</th>
-                            <th>Coins</th>
-                            <th>Reference ID</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="paymentsTable">
-                        <tr>
-                            <td colspan="7" class="text-center p-3">
-                                <div class="spinner"></div>
-                                <p>Loading payments...</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Status:</label>
+                    <select id="payment-status-filter">
+                        <option value="all">All</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <button class="btn btn-success" onclick="loadPayments()">
+                    <i class="fas fa-refresh"></i> Refresh
+                </button>
+            </div>
+
+            <div class="data-table">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Amount</th>
+                                <th>Coins</th>
+                                <th>Reference ID</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payments-table">
+                            <tr>
+                                <td colspan="7" class="empty-state">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <div>Loading payments...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- Campaigns Tab -->
-        <div class="tab-content" id="campaignsTab">
-            <h2 class="section-title">All Campaigns</h2>
+        <div class="tab-content" id="campaigns-tab">
+            <h2 class="section-title">Campaign Management</h2>
             
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Video URL</th>
-                            <th>Duration</th>
-                            <th>Intervals</th>
-                            <th>Progress</th>
-                            <th>Status</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="campaignsTable">
-                        <tr>
-                            <td colspan="8" class="text-center p-3">
-                                <div class="spinner"></div>
-                                <p>Loading campaigns...</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Status:</label>
+                    <select id="campaign-status-filter">
+                        <option value="all">All</option>
+                        <option value="active">Active</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <button class="btn btn-success" onclick="loadCampaigns()">
+                    <i class="fas fa-refresh"></i> Refresh
+                </button>
+            </div>
+
+            <div class="data-table">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Owner</th>
+                                <th>Progress</th>
+                                <th>Coins Spent</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="campaigns-table">
+                            <tr>
+                                <td colspan="7" class="empty-state">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <div>Loading campaigns...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- Users Tab -->
-        <div class="tab-content" id="usersTab">
-            <h2 class="section-title">All Users</h2>
+        <div class="tab-content" id="users-tab">
+            <h2 class="section-title">User Management</h2>
             
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Coins</th>
-                            <th>Referral Code</th>
-                            <th>Role</th>
-                            <th>Joined</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTable">
-                        <tr>
-                            <td colspan="7" class="text-center p-3">
-                                <div class="spinner"></div>
-                                <p>Loading users...</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="filters">
+                <div class="filter-group">
+                    <input type="text" id="user-search" placeholder="Search users...">
+                </div>
+                <button class="btn btn-success" onclick="loadUsers()">
+                    <i class="fas fa-refresh"></i> Refresh
+                </button>
+            </div>
+
+            <div class="data-table">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Coins</th>
+                                <th>Campaigns</th>
+                                <th>Referrals</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table">
+                            <tr>
+                                <td colspan="7" class="empty-state">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <div>Loading users...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Notification System -->
-    <div class="notification" id="notification"></div>
-
     <script>
-        // Check admin access
-        document.addEventListener('DOMContentLoaded', async function() {
-            const user = authManager.getCurrentUser();
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
-            }
+        // Initialize Supabase
+        const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-            const profile = authManager.getUserProfile();
-            if (!profile || profile.role !== 'admin') {
-                showNotification('Access denied. Admin privileges required.', 'error');
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 2000);
-                return;
-            }
+        let currentUser = null;
 
-            await loadAdminData();
+        // Check authentication and admin status
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (!session) {
+                window.location.href = 'admin-login.html';
+            } else {
+                currentUser = session.user;
+                checkAdminStatus();
+            }
         });
 
-        async function loadAdminData() {
+        async function checkAdminStatus() {
             try {
-                // Load platform stats
-                const stats = await db.getPlatformStats();
-                document.getElementById('totalUsers').textContent = stats.totalUsers;
-                document.getElementById('totalCampaigns').textContent = stats.totalCampaigns;
-                document.getElementById('activeCampaigns').textContent = stats.activeCampaigns;
-                document.getElementById('totalRevenue').textContent = `₹${stats.totalRevenue}`;
+                const { data: userData, error } = await supabase
+                    .from('users')
+                    .select('is_admin')
+                    .eq('id', currentUser.id)
+                    .single();
 
-                // Load pending payments count
-                const { data: pendingPayments } = await db.getPaymentRequests('pending');
-                document.getElementById('pendingPayments').textContent = pendingPayments?.length || 0;
+                if (error || !userData || !userData.is_admin) {
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
 
-                // Load recent activity
-                await loadRecentActivity();
-                
-                // Load tab-specific data if active
-                const activeTab = document.querySelector('.nav-tab.active').getAttribute('onclick').replace("switchTab('", "").replace("')", "");
-                await loadTabData(activeTab);
+                // Load initial data
+                loadDashboardStats();
+                loadRecentActivity();
+                setupTabNavigation();
 
             } catch (error) {
-                console.error('Error loading admin data:', error);
-                showNotification('Error loading admin data', 'error');
+                console.error('Error checking admin status:', error);
+                window.location.href = 'dashboard.html';
             }
         }
 
-        async function loadTabData(tab) {
-            switch(tab) {
-                case 'payments':
-                    await loadPayments();
-                    break;
-                case 'campaigns':
-                    await loadCampaigns();
-                    break;
-                case 'users':
-                    await loadUsers();
-                    break;
+        function setupTabNavigation() {
+            const tabs = document.querySelectorAll('.nav-tab');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Hide all tab contents
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Show selected tab content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                    
+                    // Load data for the selected tab
+                    switch(tabId) {
+                        case 'dashboard':
+                            loadDashboardStats();
+                            loadRecentActivity();
+                            break;
+                        case 'payments':
+                            loadPayments();
+                            break;
+                        case 'campaigns':
+                            loadCampaigns();
+                            break;
+                        case 'users':
+                            loadUsers();
+                            break;
+                    }
+                });
+            });
+
+            // Setup filter listeners
+            document.getElementById('payment-status-filter').addEventListener('change', loadPayments);
+            document.getElementById('campaign-status-filter').addEventListener('change', loadCampaigns);
+            document.getElementById('user-search').addEventListener('input', loadUsers);
+        }
+
+        async function loadDashboardStats() {
+            try {
+                // Total users
+                const { count: usersCount } = await supabase
+                    .from('users')
+                    .select('*', { count: 'exact', head: true });
+
+                document.getElementById('total-users').textContent = usersCount || 0;
+
+                // Total campaigns
+                const { count: campaignsCount } = await supabase
+                    .from('campaigns')
+                    .select('*', { count: 'exact', head: true });
+
+                document.getElementById('total-campaigns').textContent = campaignsCount || 0;
+
+                // Total coins in system
+                const { data: users } = await supabase
+                    .from('users')
+                    .select('coins');
+                
+                const totalCoins = users ? users.reduce((sum, user) => sum + user.coins, 0) : 0;
+                document.getElementById('total-coins').textContent = totalCoins;
+
+                // Pending payments
+                const { count: pendingPayments } = await supabase
+                    .from('payments')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('status', 'pending');
+
+                document.getElementById('pending-payments').textContent = pendingPayments || 0;
+
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+            }
+        }
+
+        async function loadRecentActivity() {
+            try {
+                // Get recent payments, campaigns, and watch logs
+                const [{ data: payments }, { data: campaigns }, { data: watchLogs }] = await Promise.all([
+                    supabase
+                        .from('payments')
+                        .select('*, users(name)')
+                        .order('timestamp', { ascending: false })
+                        .limit(5),
+                    supabase
+                        .from('campaigns')
+                        .select('*, users(name)')
+                        .order('created_at', { ascending: false })
+                        .limit(5),
+                    supabase
+                        .from('watch_logs')
+                        .select('*, users(name), campaigns(video_title)')
+                        .order('timestamp', { ascending: false })
+                        .limit(5)
+                ]);
+
+                const activities = [];
+                
+                // Process payments
+                payments.forEach(payment => {
+                    activities.push({
+                        type: 'Payment',
+                        description: `₹${payment.amount} payment ${payment.status}`,
+                        user: payment.users.name,
+                        date: payment.timestamp
+                    });
+                });
+
+                // Process campaigns
+                campaigns.forEach(campaign => {
+                    activities.push({
+                        type: 'Campaign',
+                        description: `"${campaign.video_title}" created`,
+                        user: campaign.users.name,
+                        date: campaign.created_at
+                    });
+                });
+
+                // Process watch logs
+                watchLogs.forEach(log => {
+                    activities.push({
+                        type: 'Watch',
+                        description: `Watched ${log.coins_earned} coins`,
+                        user: log.users.name,
+                        date: log.timestamp
+                    });
+                });
+
+                // Sort by date and take top 10
+                activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+                const recentActivities = activities.slice(0, 10);
+
+                const container = document.getElementById('recent-activity');
+                
+                if (recentActivities.length === 0) {
+                    container.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <div>No recent activity</div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = recentActivities.map(activity => `
+                    <tr>
+                        <td>${activity.type}</td>
+                        <td>${activity.description}</td>
+                        <td>${activity.user}</td>
+                        <td>${new Date(activity.date).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
             }
         }
 
         async function loadPayments() {
             try {
-                const { data: payments } = await db.getPaymentRequests();
-                const table = document.getElementById('paymentsTable');
+                const statusFilter = document.getElementById('payment-status-filter').value;
+                
+                let query = supabase
+                    .from('payments')
+                    .select('*, users(name, email)')
+                    .order('timestamp', { ascending: false });
+
+                if (statusFilter !== 'all') {
+                    query = query.eq('status', statusFilter);
+                }
+
+                const { data: payments, error } = await query;
+
+                if (error) throw error;
+
+                const container = document.getElementById('payments-table');
                 
                 if (!payments || payments.length === 0) {
-                    table.innerHTML = '<tr><td colspan="7" class="text-center p-3">No payment requests found</td></tr>';
+                    container.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <div>No payments found</div>
+                            </td>
+                        </tr>
+                    `;
                     return;
                 }
 
-                table.innerHTML = payments.map(payment => `
+                container.innerHTML = payments.map(payment => `
                     <tr>
-                        <td>${payment.users?.name || 'Unknown User'}</td>
+                        <td>${payment.users.name} (${payment.users.email})</td>
                         <td>₹${payment.amount}</td>
-                        <td>${payment.coins}</td>
+                        <td>${payment.coins_credited || 'Pending'}</td>
                         <td>${payment.reference_id}</td>
                         <td>
                             <span class="status-badge status-${payment.status}">
@@ -404,48 +821,148 @@
                         </td>
                         <td>${new Date(payment.timestamp).toLocaleDateString()}</td>
                         <td>
-                            <div class="btn-group">
-                                ${payment.status === 'pending' ? `
-                                    <button class="btn btn-filled btn-small" onclick="updatePaymentStatus('${payment.id}', 'approved')">
-                                        <i class="fas fa-check"></i> Approve
-                                    </button>
-                                    <button class="btn btn-danger btn-small" onclick="updatePaymentStatus('${payment.id}', 'rejected')">
-                                        <i class="fas fa-times"></i> Reject
-                                    </button>
-                                ` : ''}
-                            </div>
+                            ${payment.status === 'pending' ? `
+                                <button class="btn btn-success btn-sm" onclick="approvePayment('${payment.id}')">
+                                    Approve
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="rejectPayment('${payment.id}')">
+                                    Reject
+                                </button>
+                            ` : 'No actions'}
                         </td>
                     </tr>
                 `).join('');
+
             } catch (error) {
                 console.error('Error loading payments:', error);
-                document.getElementById('paymentsTable').innerHTML = '<tr><td colspan="7" class="text-center p-3">Error loading payments</td></tr>';
+            }
+        }
+
+        async function approvePayment(paymentId) {
+            try {
+                // Update payment status
+                const { error: paymentError } = await supabase
+                    .from('payments')
+                    .update({ status: 'approved' })
+                    .eq('id', paymentId);
+
+                if (paymentError) throw paymentError;
+
+                // Get payment details to credit coins
+                const { data: payment, error: getError } = await supabase
+                    .from('payments')
+                    .select('*')
+                    .eq('id', paymentId)
+                    .single();
+
+                if (getError) throw getError;
+
+                // Credit coins to user
+                const { error: coinsError } = await supabase.rpc('increment_coins', {
+                    user_id: payment.user_id,
+                    coin_increment: payment.coins_credited
+                });
+
+                if (coinsError) throw coinsError;
+
+                // Create notification for user
+                await supabase
+                    .from('notifications')
+                    .insert([
+                        {
+                            user_id: payment.user_id,
+                            title: 'Payment Approved!',
+                            message: `Your payment of ₹${payment.amount} has been approved. ${payment.coins_credited} coins credited to your account.`,
+                            type: 'success'
+                        }
+                    ]);
+
+                showAlert('Payment approved successfully!', 'success');
+                loadPayments();
+                loadDashboardStats();
+
+            } catch (error) {
+                console.error('Error approving payment:', error);
+                showAlert('Error approving payment', 'error');
+            }
+        }
+
+        async function rejectPayment(paymentId) {
+            try {
+                const { error } = await supabase
+                    .from('payments')
+                    .update({ status: 'rejected' })
+                    .eq('id', paymentId);
+
+                if (error) throw error;
+
+                // Get payment details for notification
+                const { data: payment, error: getError } = await supabase
+                    .from('payments')
+                    .select('*')
+                    .eq('id', paymentId)
+                    .single();
+
+                if (getError) throw getError;
+
+                // Create notification for user
+                await supabase
+                    .from('notifications')
+                    .insert([
+                        {
+                            user_id: payment.user_id,
+                            title: 'Payment Rejected',
+                            message: `Your payment of ₹${payment.amount} has been rejected. Please contact support for more information.`,
+                            type: 'error'
+                        }
+                    ]);
+
+                showAlert('Payment rejected successfully!', 'success');
+                loadPayments();
+
+            } catch (error) {
+                console.error('Error rejecting payment:', error);
+                showAlert('Error rejecting payment', 'error');
             }
         }
 
         async function loadCampaigns() {
             try {
-                const { data: campaigns } = await db.getAllCampaigns();
-                const table = document.getElementById('campaignsTable');
+                const statusFilter = document.getElementById('campaign-status-filter').value;
+                
+                let query = supabase
+                    .from('campaigns')
+                    .select('*, users(name, email)')
+                    .order('created_at', { ascending: false });
+
+                if (statusFilter !== 'all') {
+                    query = query.eq('status', statusFilter);
+                }
+
+                const { data: campaigns, error } = await query;
+
+                if (error) throw error;
+
+                const container = document.getElementById('campaigns-table');
                 
                 if (!campaigns || campaigns.length === 0) {
-                    table.innerHTML = '<tr><td colspan="8" class="text-center p-3">No campaigns found</td></tr>';
+                    container.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <div>No campaigns found</div>
+                            </td>
+                        </tr>
+                    `;
                     return;
                 }
 
-                table.innerHTML = campaigns.map(campaign => `
+                container.innerHTML = campaigns.map(campaign => `
                     <tr>
-                        <td>${campaign.users?.name || 'Unknown User'}</td>
-                        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                            ${campaign.video_url}
-                        </td>
-                        <td>${Math.round(campaign.video_length_sec / 60)}min</td>
+                        <td>${campaign.video_title}</td>
+                        <td>${campaign.users.name} (${campaign.users.email})</td>
                         <td>${campaign.current_intervals_completed}/${campaign.total_intervals}</td>
-                        <td>
-                            <div style="width: 100px; background: var(--light-gray); border-radius: 10px; height: 8px;">
-                                <div style="width: ${(campaign.current_intervals_completed / campaign.total_intervals) * 100}%; background: var(--green); height: 100%; border-radius: 10px;"></div>
-                            </div>
-                        </td>
+                        <td>${campaign.total_coins_spent || 0}</td>
                         <td>
                             <span class="status-badge status-${campaign.status}">
                                 ${campaign.status}
@@ -453,169 +970,138 @@
                         </td>
                         <td>${new Date(campaign.created_at).toLocaleDateString()}</td>
                         <td>
-                            <div class="btn-group">
-                                ${campaign.status === 'active' ? `
-                                    <button class="btn btn-danger btn-small" onclick="pauseCampaign('${campaign.id}')">
-                                        <i class="fas fa-pause"></i> Pause
-                                    </button>
-                                ` : ''}
-                                <button class="btn btn-outline btn-small" onclick="deleteCampaign('${campaign.id}')">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>
-                            </div>
+                            <button class="btn btn-warning btn-sm" onclick="pauseCampaign('${campaign.id}')">
+                                Pause
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteCampaign('${campaign.id}')">
+                                Delete
+                            </button>
                         </td>
                     </tr>
                 `).join('');
+
             } catch (error) {
                 console.error('Error loading campaigns:', error);
-                document.getElementById('campaignsTable').innerHTML = '<tr><td colspan="8" class="text-center p-3">Error loading campaigns</td></tr>';
             }
         }
 
         async function loadUsers() {
             try {
-                const { data: users } = await db.getAllUsers();
-                const table = document.getElementById('usersTable');
+                const searchTerm = document.getElementById('user-search').value;
                 
-                if (!users || users.length === 0) {
-                    table.innerHTML = '<tr><td colspan="7" class="text-center p-3">No users found</td></tr>';
+                let query = supabase
+                    .from('users')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (searchTerm) {
+                    query = query.or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
+                }
+
+                const { data: users, error } = await query;
+
+                if (error) throw error;
+
+                // Get additional stats for each user
+                const usersWithStats = await Promise.all(
+                    users.map(async (user) => {
+                        const [{ count: campaignsCount }, { count: referralsCount }] = await Promise.all([
+                            supabase
+                                .from('campaigns')
+                                .select('*', { count: 'exact', head: true })
+                                .eq('user_id', user.id),
+                            supabase
+                                .from('referrals')
+                                .select('*', { count: 'exact', head: true })
+                                .eq('inviter_id', user.id)
+                        ]);
+
+                        return {
+                            ...user,
+                            campaigns_count: campaignsCount || 0,
+                            referrals_count: referralsCount || 0
+                        };
+                    })
+                );
+
+                const container = document.getElementById('users-table');
+                
+                if (!usersWithStats || usersWithStats.length === 0) {
+                    container.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <div>No users found</div>
+                            </td>
+                        </tr>
+                    `;
                     return;
                 }
 
-                table.innerHTML = users.map(user => `
+                container.innerHTML = usersWithStats.map(user => `
                     <tr>
-                        <td>${user.name}</td>
+                        <td>${user.name || 'N/A'}</td>
                         <td>${user.email}</td>
                         <td>${user.coins}</td>
-                        <td>${user.referral_code || 'N/A'}</td>
-                        <td>
-                            <span class="status-badge ${user.role === 'admin' ? 'status-approved' : 'status-pending'}">
-                                ${user.role}
-                            </span>
-                        </td>
+                        <td>${user.campaigns_count}</td>
+                        <td>${user.referrals_count}</td>
                         <td>${new Date(user.created_at).toLocaleDateString()}</td>
                         <td>
-                            <div class="btn-group">
-                                <button class="btn btn-outline btn-small" onclick="editUser('${user.id}')">
-                                    <i class="fas fa-edit"></i> Edit
+                            <button class="btn btn-warning btn-sm" onclick="adjustCoins('${user.id}')">
+                                Adjust Coins
+                            </button>
+                            ${!user.is_admin ? `
+                                <button class="btn btn-danger btn-sm" onclick="deleteUser('${user.id}')">
+                                    Delete
                                 </button>
-                            </div>
+                            ` : ''}
                         </td>
                     </tr>
                 `).join('');
+
             } catch (error) {
                 console.error('Error loading users:', error);
-                document.getElementById('usersTable').innerHTML = '<tr><td colspan="7" class="text-center p-3">Error loading users</td></tr>';
             }
         }
 
-        async function loadRecentActivity() {
-            // This would typically load recent platform activity
-            // For now, we'll show a placeholder
-            document.getElementById('recentActivity').innerHTML = `
-                <div class="p-2">
-                    <p>Recent admin activities will appear here</p>
-                </div>
-            `;
-        }
-
-        function switchTab(tab) {
-            // Update active tab
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
-
-            // Update active content
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById(`${tab}Tab`).classList.add('active');
-
-            // Load tab data
-            loadTabData(tab);
-        }
-
-        async function updatePaymentStatus(paymentId, status) {
-            try {
-                await db.updatePaymentStatus(paymentId, status);
-                
-                if (status === 'approved') {
-                    // Get payment details and add coins to user
-                    const { data: payment } = await supabase
-                        .from('payments')
-                        .select('*')
-                        .eq('id', paymentId)
-                        .single();
-
-                    if (payment) {
-                        await db.updateUserCoins(payment.user_id, payment.coins);
-                    }
-                }
-
-                showNotification(`Payment ${status} successfully`, 'success');
-                await loadPayments(); // Refresh the table
-                await loadAdminData(); // Refresh stats
-            } catch (error) {
-                showNotification('Error updating payment status: ' + error.message, 'error');
-            }
-        }
-
-        async function pauseCampaign(campaignId) {
-            if (!confirm('Are you sure you want to pause this campaign?')) return;
-
-            try {
-                const { error } = await supabase
-                    .from('campaigns')
-                    .update({ status: 'paused' })
-                    .eq('id', campaignId);
-
-                if (error) throw error;
-
-                showNotification('Campaign paused successfully', 'success');
-                await loadCampaigns();
-            } catch (error) {
-                showNotification('Error pausing campaign: ' + error.message, 'error');
-            }
-        }
-
-        async function deleteCampaign(campaignId) {
-            if (!confirm('Are you sure you want to delete this campaign? This action cannot be undone.')) return;
-
-            try {
-                const { error } = await supabase
-                    .from('campaigns')
-                    .delete()
-                    .eq('id', campaignId);
-
-                if (error) throw error;
-
-                showNotification('Campaign deleted successfully', 'success');
-                await loadCampaigns();
-            } catch (error) {
-                showNotification('Error deleting campaign: ' + error.message, 'error');
-            }
-        }
-
-        function editUser(userId) {
-            // This would typically open a user edit modal
-            showNotification('User edit functionality would be implemented here', 'warning');
-        }
-
-        async function handleLogout() {
-            try {
-                await authManager.signOut();
-                window.location.href = 'index.html';
-            } catch (error) {
-                showNotification('Error during logout', 'error');
-            }
-        }
-
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type}`;
-            notification.classList.add('show');
-
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+            
             setTimeout(() => {
-                notification.classList.remove('show');
+                alert.style.display = 'none';
             }, 5000);
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        // Placeholder functions for other actions
+        function pauseCampaign(campaignId) {
+            alert(`Pause campaign ${campaignId} - Feature coming soon!`);
+        }
+
+        function deleteCampaign(campaignId) {
+            if (confirm('Are you sure you want to delete this campaign?')) {
+                alert(`Delete campaign ${campaignId} - Feature coming soon!`);
+            }
+        }
+
+        function adjustCoins(userId) {
+            const newCoins = prompt('Enter new coin balance:');
+            if (newCoins !== null && !isNaN(newCoins)) {
+                alert(`Adjust coins for user ${userId} to ${newCoins} - Feature coming soon!`);
+            }
+        }
+
+        function deleteUser(userId) {
+            if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+                alert(`Delete user ${userId} - Feature coming soon!`);
+            }
         }
     </script>
 </body>
