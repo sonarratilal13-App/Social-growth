@@ -168,6 +168,33 @@
             color: #92400E;
             font-size: 0.9rem;
         }
+
+        .demo-credentials {
+            background-color: #F0FDF4;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px dashed var(--green);
+        }
+
+        .demo-credentials h4 {
+            color: var(--black);
+            margin-bottom: 10px;
+        }
+
+        .demo-credentials p {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .demo-credentials code {
+            background-color: var(--white);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: var(--black);
+        }
     </style>
 </head>
 <body>
@@ -190,12 +217,12 @@
         <form id="loginForm">
             <div class="form-group">
                 <label for="email">Admin Email</label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" name="email" required value="admin@socialgrowth.com">
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" required value="Admin123!">
             </div>
 
             <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -203,8 +230,15 @@
             </button>
         </form>
 
+        <div class="demo-credentials">
+            <h4>Demo Credentials:</h4>
+            <p><strong>Email:</strong> <code>admin@socialgrowth.com</code></p>
+            <p><strong>Password:</strong> <code>Admin123!</code></p>
+            <p><small>First sign up with these credentials, then run the SQL to make this user admin.</small></p>
+        </div>
+
         <div class="user-login">
-            <a href="login.html">← Back to User Login</a>
+            <a href="login-fixed.html">← Back to User Login</a>
         </div>
     </div>
 
@@ -218,18 +252,27 @@
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session) {
                 // Check if user is admin
-                supabase
-                    .from('users')
-                    .select('is_admin')
-                    .eq('id', session.user.id)
-                    .single()
-                    .then(({ data: userData }) => {
-                        if (userData && userData.is_admin) {
-                            window.location.href = 'admin.html';
-                        }
-                    });
+                checkAdminStatus(session.user.id).then(isAdmin => {
+                    if (isAdmin) {
+                        window.location.href = 'admin.html';
+                    }
+                });
             }
         });
+
+        async function checkAdminStatus(userId) {
+            try {
+                const { data: userData, error } = await supabase
+                    .from('users')
+                    .select('is_admin')
+                    .eq('id', userId)
+                    .single();
+                    
+                return userData && userData.is_admin;
+            } catch (error) {
+                return false;
+            }
+        }
 
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -256,15 +299,9 @@
                 
                 if (data.user) {
                     // Check if user is admin
-                    const { data: userData, error: userError } = await supabase
-                        .from('users')
-                        .select('is_admin')
-                        .eq('id', data.user.id)
-                        .single();
+                    const isAdmin = await checkAdminStatus(data.user.id);
                     
-                    if (userError) throw userError;
-                    
-                    if (!userData.is_admin) {
+                    if (!isAdmin) {
                         throw new Error('Access denied. Admin privileges required.');
                     }
                     
@@ -274,7 +311,15 @@
                 
             } catch (error) {
                 console.error('Admin login error:', error);
-                showAlert(error.message || 'Invalid email or password', 'error');
+                let errorMessage = error.message;
+                
+                if (error.message.includes('Invalid login credentials')) {
+                    errorMessage = 'Invalid email or password. Please sign up first with these credentials.';
+                } else if (error.message.includes('Admin privileges')) {
+                    errorMessage = 'This user does not have admin privileges. Please contact system administrator.';
+                }
+                
+                showAlert(errorMessage, 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Sign In as Admin';
