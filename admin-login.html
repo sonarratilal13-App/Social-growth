@@ -216,13 +216,13 @@
 
         <form id="loginForm">
             <div class="form-group">
-                <label for="email">Admin Email</label>
-                <input type="email" id="email" name="email" required value="admin@socialgrowth.com">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required value="rati">
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" required value="Admin123!">
+                <input type="password" id="password" name="password" required value="rati73">
             </div>
 
             <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -231,10 +231,9 @@
         </form>
 
         <div class="demo-credentials">
-            <h4>Demo Credentials:</h4>
-            <p><strong>Email:</strong> <code>admin@socialgrowth.com</code></p>
-            <p><strong>Password:</strong> <code>Admin123!</code></p>
-            <p><small>First sign up with these credentials, then run the SQL to make this user admin.</small></p>
+            <h4>Admin Credentials:</h4>
+            <p><strong>Username:</strong> <code>rati</code></p>
+            <p><strong>Password:</strong> <code>rati73</code></p>
         </div>
 
         <div class="user-login">
@@ -243,35 +242,15 @@
     </div>
 
     <script>
-        // Initialize Supabase
-        const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        // Simple direct authentication - no Supabase Auth required
+        const ADMIN_CREDENTIALS = {
+            username: 'rati',
+            password: 'rati73'
+        };
 
-        // Check if user is already logged in as admin
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-                // Check if user is admin
-                checkAdminStatus(session.user.id).then(isAdmin => {
-                    if (isAdmin) {
-                        window.location.href = 'admin.html';
-                    }
-                });
-            }
-        });
-
-        async function checkAdminStatus(userId) {
-            try {
-                const { data: userData, error } = await supabase
-                    .from('users')
-                    .select('is_admin')
-                    .eq('id', userId)
-                    .single();
-                    
-                return userData && userData.is_admin;
-            } catch (error) {
-                return false;
-            }
+        // Check if already logged in
+        if (localStorage.getItem('admin_authenticated') === 'true') {
+            window.location.href = 'admin.html';
         }
 
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
@@ -281,7 +260,7 @@
             const alert = document.getElementById('alert');
             
             // Get form values
-            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             
             // Disable submit button
@@ -289,37 +268,21 @@
             submitBtn.textContent = 'Signing In...';
             
             try {
-                // Sign in user with Supabase Auth
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-                
-                if (error) throw error;
-                
-                if (data.user) {
-                    // Check if user is admin
-                    const isAdmin = await checkAdminStatus(data.user.id);
-                    
-                    if (!isAdmin) {
-                        throw new Error('Access denied. Admin privileges required.');
-                    }
+                // Simple direct authentication
+                if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                    // Set authentication flag in localStorage
+                    localStorage.setItem('admin_authenticated', 'true');
+                    localStorage.setItem('admin_username', username);
                     
                     // Redirect to admin panel
                     window.location.href = 'admin.html';
+                } else {
+                    throw new Error('Invalid username or password');
                 }
                 
             } catch (error) {
                 console.error('Admin login error:', error);
-                let errorMessage = error.message;
-                
-                if (error.message.includes('Invalid login credentials')) {
-                    errorMessage = 'Invalid email or password. Please sign up first with these credentials.';
-                } else if (error.message.includes('Admin privileges')) {
-                    errorMessage = 'This user does not have admin privileges. Please contact system administrator.';
-                }
-                
-                showAlert(errorMessage, 'error');
+                showAlert(error.message, 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Sign In as Admin';
