@@ -126,16 +126,32 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
 
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        #youtube-player {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 12px;
+        }
+
         .video-placeholder {
             background: linear-gradient(135deg, var(--green), var(--dark-green));
-            height: 400px;
+            height: 100%;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--white);
             font-size: 4rem;
-            margin-bottom: 20px;
+            cursor: pointer;
         }
 
         .video-info {
@@ -175,7 +191,7 @@
 
         .progress-label {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             margin-bottom: 8px;
             font-size: 0.9rem;
             color: var(--gray);
@@ -373,7 +389,7 @@
                 justify-content: space-between;
             }
 
-            .video-placeholder {
+            .video-container {
                 height: 250px;
             }
 
@@ -409,9 +425,13 @@
         <div id="alert" class="alert"></div>
 
         <div class="video-player-container" id="video-container" style="display: none;">
-            <div class="video-placeholder">
-                <i class="fab fa-youtube"></i>
+            <div class="video-container">
+                <div id="youtube-player"></div>
+                <div class="video-placeholder" id="video-placeholder">
+                    <i class="fab fa-youtube"></i>
+                </div>
             </div>
+            
             <div class="video-info">
                 <h2 class="video-title" id="video-title">Loading...</h2>
                 <div class="video-stats">
@@ -481,6 +501,18 @@
         </a>
     </nav>
 
+    <!-- YouTube IFrame API -->
+    <script>
+        // YouTube Player Variable
+        let youtubePlayer;
+
+        // Load YouTube IFrame API
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    </script>
+
     <script>
         // Initialize Supabase
         const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
@@ -495,6 +527,11 @@
         let isWatching = false;
         let startTime = null;
         let lastIntervalTime = null;
+
+        // YouTube API Ready
+        function onYouTubeIframeAPIReady() {
+            console.log('YouTube API Ready');
+        }
 
         // Check authentication
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -604,6 +641,14 @@
                 totalEarnedCoins = 0;
                 isWatching = false;
 
+                // Extract YouTube Video ID from URL
+                const videoId = extractYouTubeVideoId(campaign.video_url);
+                
+                if (!videoId) {
+                    showAlert('Invalid YouTube URL', 'error');
+                    return;
+                }
+
                 // Update UI
                 document.getElementById('video-title').textContent = campaign.video_title || 'Untitled Campaign';
                 document.getElementById('video-length').textContent = `${campaign.video_length_sec}s`;
@@ -615,6 +660,9 @@
                 document.getElementById('timer').textContent = '00:00';
                 document.getElementById('start-watch-btn').textContent = 'Start Watching';
                 document.getElementById('start-watch-btn').disabled = false;
+
+                // Load YouTube Player
+                loadYouTubePlayer(videoId);
 
                 // Show video container
                 document.getElementById('video-container').style.display = 'block';
@@ -628,14 +676,53 @@
             }
         }
 
+        function extractYouTubeVideoId(url) {
+            const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[7].length === 11) ? match[7] : null;
+        }
+
+        function loadYouTubePlayer(videoId) {
+            // Hide placeholder and show player
+            document.getElementById('video-placeholder').style.display = 'none';
+            
+            // Create YouTube player
+            youtubePlayer = new YT.Player('youtube-player', {
+                height: '400',
+                width: '100%',
+                videoId: videoId,
+                playerVars: {
+                    'playsinline': 1,
+                    'enablejsapi': 1,
+                    'origin': window.location.origin
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            console.log('YouTube Player Ready');
+            document.getElementById('start-watch-btn').disabled = false;
+        }
+
+        function onPlayerStateChange(event) {
+            // Handle YouTube player state changes if needed
+        }
+
         function startWatching() {
-            if (!currentCampaign || isWatching) return;
+            if (!currentCampaign || isWatching || !youtubePlayer) return;
 
             isWatching = true;
             startTime = new Date();
             lastIntervalTime = startTime;
             document.getElementById('start-watch-btn').textContent = 'Watching...';
             document.getElementById('start-watch-btn').disabled = true;
+
+            // Play YouTube video
+            youtubePlayer.playVideo();
 
             // Start timer
             let seconds = 0;
@@ -793,6 +880,10 @@
                 watchTimer = null;
             }
 
+            if (youtubePlayer) {
+                youtubePlayer.pauseVideo();
+            }
+
             isWatching = false;
             document.getElementById('start-watch-btn').textContent = 'Completed';
             document.getElementById('start-watch-btn').disabled = true;
@@ -803,6 +894,9 @@
             setTimeout(() => {
                 loadAvailableCampaigns();
                 document.getElementById('video-container').style.display = 'none';
+                // Reset YouTube player
+                document.getElementById('video-placeholder').style.display = 'flex';
+                document.getElementById('youtube-player').innerHTML = '';
             }, 3000);
         }
 
@@ -812,11 +906,18 @@
                 watchTimer = null;
             }
 
+            if (youtubePlayer) {
+                youtubePlayer.stopVideo();
+            }
+
             isWatching = false;
             currentCampaign = null;
             document.getElementById('video-container').style.display = 'none';
             document.getElementById('start-watch-btn').textContent = 'Start Watching';
             document.getElementById('start-watch-btn').disabled = false;
+            // Reset YouTube player
+            document.getElementById('video-placeholder').style.display = 'flex';
+            document.getElementById('youtube-player').innerHTML = '';
         }
 
         function setupAntiCheat() {
