@@ -217,7 +217,7 @@
         </form>
 
         <div class="login-link">
-            Already have an account? <a href="login.html">Sign in here</a>
+            Already have an account? <a href="login-fixed.html">Sign in here</a>
         </div>
     </div>
 
@@ -261,24 +261,33 @@
                 // Generate referral code for new user
                 const userReferralCode = 'SG-' + Math.random().toString(36).substr(2, 8).toUpperCase();
                 
+                console.log('Starting signup process...');
+                
                 // Sign up user with Supabase Auth
                 const { data: authData, error: authError } = await supabase.auth.signUp({
                     email: email,
                     password: password,
                     options: {
                         data: {
-                            name: name
+                            name: name,
+                            referral_code: userReferralCode
                         }
                     }
                 });
                 
-                if (authError) throw authError;
+                if (authError) {
+                    console.error('Auth error:', authError);
+                    throw authError;
+                }
                 
                 if (authData.user) {
-                    // Wait a moment for the user to be available in the database
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    console.log('Auth user created:', authData.user.id);
                     
-                    // Create user profile in database
+                    // Wait a moment for the user to be available
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Create user profile in database using a service key to bypass RLS
+                    // We'll use the anon key for now, but in production you might want a server function
                     const { error: dbError } = await supabase
                         .from('users')
                         .insert([
@@ -292,14 +301,19 @@
                         ]);
                     
                     if (dbError) {
+                        console.error('Database error:', dbError);
                         // If user creation fails, delete the auth user
                         await supabase.auth.signOut();
-                        throw dbError;
+                        throw new Error('Failed to create user profile. Please try again.');
                     }
+                    
+                    console.log('User profile created successfully');
                     
                     // Handle referral bonus if referral code provided
                     if (referralCode) {
                         try {
+                            console.log('Processing referral:', referralCode);
+                            
                             // Find user with this referral code
                             const { data: referrerData, error: referrerError } = await supabase
                                 .from('users')
@@ -307,7 +321,11 @@
                                 .eq('referral_code', referralCode)
                                 .single();
                                 
-                            if (referrerData && referrerData.id !== authData.user.id) {
+                            if (referrerError) {
+                                console.error('Referral lookup error:', referrerError);
+                            } else if (referrerData && referrerData.id !== authData.user.id) {
+                                console.log('Referrer found:', referrerData.id);
+                                
                                 // Update new user's referred_by field
                                 await supabase
                                     .from('users')
@@ -330,9 +348,11 @@
                                     user_id: referrerData.id,
                                     coin_increment: 50
                                 });
+                                
+                                console.log('Referral bonus processed');
                             }
                         } catch (referralError) {
-                            console.error('Referral error:', referralError);
+                            console.error('Referral processing error:', referralError);
                             // Continue with signup even if referral fails
                         }
                     }
@@ -341,7 +361,7 @@
                     
                     // Redirect to login after 3 seconds
                     setTimeout(() => {
-                        window.location.href = 'login.html';
+                        window.location.href = 'login-fixed.html';
                     }, 3000);
                 }
                 
@@ -350,10 +370,12 @@
                 let errorMessage = error.message || 'An error occurred during signup';
                 
                 // Handle specific error cases
-                if (error.message.includes('already registered')) {
+                if (error.message.includes('User already registered')) {
                     errorMessage = 'This email is already registered. Please try logging in instead.';
                 } else if (error.message.includes('password_hash')) {
                     errorMessage = 'Database configuration error. Please contact support.';
+                } else if (error.message.includes('invalid')) {
+                    errorMessage = 'Invalid email or password format.';
                 }
                 
                 showAlert(errorMessage, 'error');
