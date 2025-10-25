@@ -4,307 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Social Growth</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --white: #ffffff;
-            --green: #10B981;
-            --dark-green: #059669;
-            --black: #111827;
-            --gray: #6B7280;
-            --light-gray: #F9FAFB;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh; display: flex; align-items: center; justify-content: center;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        .login-box {
+            background: white; padding: 40px; border-radius: 10px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 400px; text-align: center;
         }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            line-height: 1.6;
-            color: var(--black);
-            background: linear-gradient(135deg, var(--white) 0%, var(--light-gray) 50%, var(--green) 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+        h2 { margin-bottom: 20px; color: #333; }
+        input { 
+            width: 100%; padding: 12px; margin: 10px 0; 
+            border: 1px solid #ddd; border-radius: 5px; 
         }
-
-        .auth-container {
-            background-color: var(--white);
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 450px;
+        button { 
+            width: 100%; padding: 12px; background: #667eea; 
+            color: white; border: none; border-radius: 5px; 
+            cursor: pointer; margin-top: 10px;
         }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.8rem;
-            color: var(--black);
-            margin-bottom: 30px;
-        }
-
-        .logo-icon {
-            margin-right: 10px;
-            font-size: 2rem;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 10px;
-            color: var(--black);
-            font-weight: 600;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: var(--gray);
-            margin-bottom: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--black);
-        }
-
-        input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #E5E7EB;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--green);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: none;
-            font-size: 1rem;
-            margin-top: 10px;
-        }
-
-        .btn-primary {
-            background-color: var(--green);
-            color: var(--white);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--dark-green);
-        }
-
-        .btn-primary:disabled {
-            background-color: var(--gray);
-            cursor: not-allowed;
-        }
-
-        .user-login {
-            text-align: center;
-            margin-top: 25px;
-        }
-
-        .user-login a {
-            color: var(--green);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .user-login a:hover {
-            text-decoration: underline;
-        }
-
-        .alert {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .alert-error {
-            background-color: #FEE2E2;
-            color: #991B1B;
-            border: 1px solid #FECACA;
-        }
-
-        .admin-notice {
-            background-color: #FEF3C7;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #F59E0B;
-        }
-
-        .admin-notice h3 {
-            color: #92400E;
-            margin-bottom: 5px;
-        }
-
-        .admin-notice p {
-            color: #92400E;
-            font-size: 0.9rem;
-        }
-
-        .demo-credentials {
-            background-color: #F0FDF4;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            border: 1px dashed var(--green);
-        }
-
-        .demo-credentials h4 {
-            color: var(--black);
-            margin-bottom: 10px;
-        }
-
-        .demo-credentials p {
-            color: var(--gray);
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-
-        .demo-credentials code {
-            background-color: var(--white);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: monospace;
-            color: var(--black);
-        }
+        button:hover { background: #764ba2; }
+        .error { color: red; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
-    <div class="auth-container">
-        <div class="logo">
-            <span class="logo-icon">🚀</span>
-            Social Growth - Admin
-        </div>
-        
-        <h1>Admin Login</h1>
-        <p class="subtitle">Access the admin dashboard</p>
-
-        <div class="admin-notice">
-            <h3>Admin Access Only</h3>
-            <p>This login is restricted to authorized administrators only.</p>
-        </div>
-
-        <div id="alert" class="alert"></div>
-
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required value="rati">
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required value="rati73">
-            </div>
-
-            <button type="submit" class="btn btn-primary" id="submitBtn">
-                Sign In as Admin
-            </button>
-        </form>
-
-        <div class="demo-credentials">
-            <h4>Admin Credentials:</h4>
-            <p><strong>Username:</strong> <code>rati</code></p>
-            <p><strong>Password:</strong> <code>rati73</code></p>
-        </div>
-
-        <div class="user-login">
-            <a href="login-fixed.html">← Back to User Login</a>
-        </div>
+    <div class="login-box">
+        <h2>Admin Login</h2>
+        <input type="text" id="username" placeholder="Username" value="rati">
+        <input type="password" id="password" placeholder="Password" value="rati73">
+        <button onclick="login()">Login</button>
+        <div id="error" class="error">Invalid credentials!</div>
     </div>
 
     <script>
-        // Simple direct authentication - no Supabase Auth required
-        const ADMIN_CREDENTIALS = {
-            username: 'rati',
-            password: 'rati73'
-        };
-
-        // Check if already logged in
-        document.addEventListener('DOMContentLoaded', function() {
-            const isAuthenticated = localStorage.getItem('admin_authenticated');
-            const adminUsername = localStorage.getItem('admin_username');
-            
-            if (isAuthenticated === 'true' && adminUsername === 'rati') {
-                window.location.href = 'admin.html';
-            }
-        });
-
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const submitBtn = document.getElementById('submitBtn');
-            const alert = document.getElementById('alert');
-            
-            // Get form values
+        function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             
-            // Disable submit button
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Signing In...';
-            
-            try {
-                // Simple direct authentication
-                if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-                    // Set authentication flag in localStorage
-                    localStorage.setItem('admin_authenticated', 'true');
-                    localStorage.setItem('admin_username', username);
-                    
-                    // Redirect to admin panel
-                    window.location.href = 'admin.html';
-                } else {
-                    throw new Error('Invalid username or password');
-                }
-                
-            } catch (error) {
-                console.error('Admin login error:', error);
-                showAlert(error.message, 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Sign In as Admin';
+            if (username === 'rati' && password === 'rati73') {
+                localStorage.setItem('admin', 'true');
+                window.location.href = 'admin.html';
+            } else {
+                document.getElementById('error').style.display = 'block';
             }
-        });
-        
-        function showAlert(message, type) {
-            const alert = document.getElementById('alert');
-            alert.textContent = message;
-            alert.className = `alert alert-${type}`;
-            alert.style.display = 'block';
-            
-            // Auto hide after 5 seconds
-            setTimeout(() => {
-                alert.style.display = 'none';
-            }, 5000);
         }
+        
+        // Enter key support
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') login();
+        });
     </script>
 </body>
 </html>
