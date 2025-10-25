@@ -242,75 +242,69 @@
     </div>
 
     <script>
-        <script>
-    // Simple direct authentication - no Supabase Auth required
-    const ADMIN_CREDENTIALS = {
-        username: 'rati',
-        password: 'rati73'
-    };
+        // Simple direct authentication - no Supabase Auth required
+        const ADMIN_CREDENTIALS = {
+            username: 'rati',
+            password: 'rati73'
+        };
 
-    // Check if already logged in - yeh page load pe check karo
-    document.addEventListener('DOMContentLoaded', function() {
-        const isAuthenticated = localStorage.getItem('admin_authenticated');
-        const adminUsername = localStorage.getItem('admin_username');
-        
-        console.log('Login page - Current auth status:', isAuthenticated, adminUsername);
-        
-        if (isAuthenticated === 'true' && adminUsername === 'rati') {
-            console.log('Already authenticated, redirecting to admin panel...');
-            window.location.href = 'admin.html';
-        }
-    });
-
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const submitBtn = document.getElementById('submitBtn');
-        const alert = document.getElementById('alert');
-        
-        // Get form values
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        
-        // Disable submit button
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Signing In...';
-        
-        try {
-            // Simple direct authentication
-            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-                // Set authentication flag in localStorage
-                localStorage.setItem('admin_authenticated', 'true');
-                localStorage.setItem('admin_username', username);
-                
-                console.log('Login successful, redirecting...');
-                
-                // Redirect to admin panel
-                window.location.href = 'admin.html';
-            } else {
-                throw new Error('Invalid username or password');
-            }
+        // Check if already logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const isAuthenticated = localStorage.getItem('admin_authenticated');
+            const adminUsername = localStorage.getItem('admin_username');
             
-        } catch (error) {
-            console.error('Admin login error:', error);
-            showAlert(error.message, 'error');
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Sign In as Admin';
-        }
-    });
-    
-    function showAlert(message, type) {
-        const alert = document.getElementById('alert');
-        alert.textContent = message;
-        alert.className = `alert alert-${type}`;
-        alert.style.display = 'block';
+            if (isAuthenticated === 'true' && adminUsername === 'rati') {
+                window.location.href = 'admin.html';
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const alert = document.getElementById('alert');
+            
+            // Get form values
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing In...';
+            
+            try {
+                // Simple direct authentication
+                if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                    // Set authentication flag in localStorage
+                    localStorage.setItem('admin_authenticated', 'true');
+                    localStorage.setItem('admin_username', username);
+                    
+                    // Redirect to admin panel
+                    window.location.href = 'admin.html';
+                } else {
+                    throw new Error('Invalid username or password');
+                }
+                
+            } catch (error) {
+                console.error('Admin login error:', error);
+                showAlert(error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In as Admin';
+            }
+        });
         
-        // Auto hide after 5 seconds
-        setTimeout(() => {
-            alert.style.display = 'none';
-        }, 5000);
-    }
-</script>
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+    </script>
 </body>
 </html>
