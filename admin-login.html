@@ -162,18 +162,18 @@
 <body>
     <div class="auth-container">
         <div class="logo">
-            <span class="logo-icon">🚀</span>
-            Social Growth - Admin
+            <span class="logo-icon">🔐</span>
+            Admin Panel
         </div>
         
         <h1>Admin Login</h1>
-        <p class="subtitle">Sign in to access the admin panel</p>
+        <p class="subtitle">Access the Social Growth admin dashboard</p>
 
         <div id="alert" class="alert"></div>
 
         <form id="adminLoginForm">
             <div class="form-group">
-                <label for="email">Email Address</label>
+                <label for="email">Admin Email</label>
                 <input type="email" id="email" name="email" required>
             </div>
 
@@ -183,20 +183,43 @@
             </div>
 
             <button type="submit" class="btn btn-primary" id="submitBtn">
-                Sign In
+                Sign In as Admin
             </button>
         </form>
 
         <div class="user-login">
-            <a href="login.html">User Login</a>
+            <a href="login.html">← Back to User Login</a>
         </div>
     </div>
 
     <script>
         // Initialize Supabase
         const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iywicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Check if user is already logged in and is admin
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                checkAdminStatus(session.user);
+            }
+        });
+
+        async function checkAdminStatus(user) {
+            try {
+                const { data: userData, error } = await supabase
+                    .from('users')
+                    .select('is_admin')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!error && userData && userData.is_admin) {
+                    window.location.href = 'admin.html';
+                }
+            } catch (error) {
+                console.log('User is not admin or error checking status');
+            }
+        }
 
         document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -213,8 +236,6 @@
             submitBtn.textContent = 'Signing In...';
             
             try {
-                console.log('Starting admin login process...');
-                
                 // Sign in user with Supabase Auth
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
@@ -222,29 +243,22 @@
                 });
                 
                 if (error) {
-                    console.error('Auth error:', error);
                     throw error;
                 }
                 
                 if (data.user) {
-                    console.log('User authenticated:', data.user.id);
-                    
-                    // Check if user exists in our database and is admin
+                    // Check if user is admin
                     const { data: userData, error: userError } = await supabase
                         .from('users')
                         .select('is_admin')
                         .eq('id', data.user.id)
                         .single();
-                    
-                    if (userError) {
-                        console.error('User data fetch error:', userError);
-                        throw new Error('Failed to load user data');
-                    }
-                    
-                    if (!userData.is_admin) {
+
+                    if (userError || !userData || !userData.is_admin) {
+                        await supabase.auth.signOut();
                         throw new Error('Access denied. Admin privileges required.');
                     }
-                    
+
                     // Redirect to admin panel
                     window.location.href = 'admin.html';
                 }
@@ -262,7 +276,7 @@
                 showAlert(errorMessage, 'error');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Sign In';
+                submitBtn.textContent = 'Sign In as Admin';
             }
         });
         
@@ -272,7 +286,6 @@
             alert.className = `alert alert-${type}`;
             alert.style.display = 'block';
             
-            // Auto hide after 5 seconds
             setTimeout(() => {
                 alert.style.display = 'none';
             }, 5000);
