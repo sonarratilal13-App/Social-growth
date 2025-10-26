@@ -320,6 +320,17 @@
             font-size: 0.9rem;
         }
 
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
         @media (max-width: 768px) {
             .admin-header {
                 flex-direction: column;
@@ -351,12 +362,13 @@
             
             <div class="admin-nav">
                 <div class="nav-tab active" data-tab="dashboard">Dashboard</div>
-                <div class="nav-tab" data-tab="payments">Payments</div>
-                <div class="nav-tab" data-tab="campaigns">Campaigns</div>
                 <div class="nav-tab" data-tab="users">Users</div>
+                <div class="nav-tab" data-tab="campaigns">Campaigns</div>
+                <div class="nav-tab" data-tab="payments">Payments</div>
             </div>
 
             <div class="user-info">
+                <span>Welcome, Admin</span>
                 <button class="logout-btn" onclick="logout()">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
@@ -412,23 +424,107 @@
 
             <div class="data-table">
                 <div class="table-header">
-                    <h3>Recent Activity</h3>
+                    <h3>Recent Users</h3>
                 </div>
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>Type</th>
-                                <th>Description</th>
-                                <th>User</th>
-                                <th>Date</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Coins</th>
+                                <th>Joined</th>
                             </tr>
                         </thead>
-                        <tbody id="recent-activity">
+                        <tbody id="recent-users">
                             <tr>
-                                <td colspan="4" class="empty-state">
+                                <td colspan="4" class="loading">
                                     <i class="fas fa-spinner fa-spin"></i>
-                                    <div>Loading activity...</div>
+                                    <div>Loading users...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div class="tab-content" id="users-tab">
+            <h2 class="section-title">User Management</h2>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <input type="text" id="user-search" placeholder="Search users...">
+                </div>
+                <button class="btn btn-success" onclick="loadUsers()">
+                    <i class="fas fa-refresh"></i> Refresh
+                </button>
+            </div>
+
+            <div class="data-table">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Coins</th>
+                                <th>Campaigns</th>
+                                <th>Referrals</th>
+                                <th>Joined</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table">
+                            <tr>
+                                <td colspan="7" class="loading">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <div>Loading users...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Campaigns Tab -->
+        <div class="tab-content" id="campaigns-tab">
+            <h2 class="section-title">Campaign Management</h2>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Status:</label>
+                    <select id="campaign-status-filter">
+                        <option value="all">All</option>
+                        <option value="active">Active</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <button class="btn btn-success" onclick="loadCampaigns()">
+                    <i class="fas fa-refresh"></i> Refresh
+                </button>
+            </div>
+
+            <div class="data-table">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Owner</th>
+                                <th>Progress</th>
+                                <th>Coins Spent</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody id="campaigns-table">
+                            <tr>
+                                <td colspan="6" class="loading">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <div>Loading campaigns...</div>
                                 </td>
                             </tr>
                         </tbody>
@@ -472,94 +568,9 @@
                         </thead>
                         <tbody id="payments-table">
                             <tr>
-                                <td colspan="7" class="empty-state">
+                                <td colspan="7" class="loading">
                                     <i class="fas fa-spinner fa-spin"></i>
                                     <div>Loading payments...</div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Campaigns Tab -->
-        <div class="tab-content" id="campaigns-tab">
-            <h2 class="section-title">Campaign Management</h2>
-            
-            <div class="filters">
-                <div class="filter-group">
-                    <label>Status:</label>
-                    <select id="campaign-status-filter">
-                        <option value="all">All</option>
-                        <option value="active">Active</option>
-                        <option value="completed">Completed</option>
-                    </select>
-                </div>
-                <button class="btn btn-success" onclick="loadCampaigns()">
-                    <i class="fas fa-refresh"></i> Refresh
-                </button>
-            </div>
-
-            <div class="data-table">
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Owner</th>
-                                <th>Progress</th>
-                                <th>Coins Spent</th>
-                                <th>Status</th>
-                                <th>Created</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="campaigns-table">
-                            <tr>
-                                <td colspan="7" class="empty-state">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    <div>Loading campaigns...</div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Users Tab -->
-        <div class="tab-content" id="users-tab">
-            <h2 class="section-title">User Management</h2>
-            
-            <div class="filters">
-                <div class="filter-group">
-                    <input type="text" id="user-search" placeholder="Search users...">
-                </div>
-                <button class="btn btn-success" onclick="loadUsers()">
-                    <i class="fas fa-refresh"></i> Refresh
-                </button>
-            </div>
-
-            <div class="data-table">
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Coins</th>
-                                <th>Campaigns</th>
-                                <th>Referrals</th>
-                                <th>Joined</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="users-table">
-                            <tr>
-                                <td colspan="7" class="empty-state">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    <div>Loading users...</div>
                                 </td>
                             </tr>
                         </tbody>
@@ -570,77 +581,21 @@
     </div>
 
     <script>
-        // Initialize Supabase
+        // Initialize Supabase (read-only for data display)
         const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        let currentUser = null;
+        // Check if user is logged in
+        if (localStorage.getItem('adminLoggedIn') !== 'true') {
+            window.location.href = 'admin-login-simple.html';
+        }
 
-        // Check authentication and admin status
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (!session) {
-                window.location.href = 'admin-login.html';
-            } else {
-                currentUser = session.user;
-                checkAdminStatus();
-            }
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardStats();
+            setupTabNavigation();
         });
-
-        async function checkAdminStatus() {
-            try {
-                const { data: userData, error } = await supabase
-                    .from('users')
-                    .select('is_admin')
-                    .eq('id', currentUser.id)
-                    .single();
-
-                if (error) {
-                    console.error('Error checking admin status:', error);
-                    // Create admin user if doesn't exist
-                    await createAdminUser(currentUser);
-                } else if (!userData.is_admin) {
-                    window.location.href = 'dashboard.html';
-                    return;
-                }
-
-                // Load initial data
-                loadDashboardStats();
-                loadRecentActivity();
-                setupTabNavigation();
-
-            } catch (error) {
-                console.error('Error in admin check:', error);
-                window.location.href = 'dashboard.html';
-            }
-        }
-
-        async function createAdminUser(authUser) {
-            try {
-                const { error } = await supabase
-                    .from('users')
-                    .insert([
-                        { 
-                            id: authUser.id,
-                            email: authUser.email,
-                            name: 'Admin User',
-                            referral_code: 'ADMIN-' + Math.random().toString(36).substr(2, 8).toUpperCase(),
-                            coins: 0,
-                            is_admin: true
-                        }
-                    ]);
-                    
-                if (error) {
-                    console.error('Error creating admin user:', error);
-                    throw error;
-                }
-                
-                console.log('Admin user created successfully');
-            } catch (error) {
-                console.error('Error creating admin user:', error);
-                throw error;
-            }
-        }
 
         function setupTabNavigation() {
             const tabs = document.querySelectorAll('.nav-tab');
@@ -665,16 +620,15 @@
                     switch(tabId) {
                         case 'dashboard':
                             loadDashboardStats();
-                            loadRecentActivity();
                             break;
-                        case 'payments':
-                            loadPayments();
+                        case 'users':
+                            loadUsers();
                             break;
                         case 'campaigns':
                             loadCampaigns();
                             break;
-                        case 'users':
-                            loadUsers();
+                        case 'payments':
+                            loadPayments();
                             break;
                     }
                 });
@@ -688,22 +642,24 @@
 
         async function loadDashboardStats() {
             try {
+                showLoading('recent-users');
+                
                 // Total users
-                const { count: usersCount } = await supabase
+                const { count: usersCount, error: usersError } = await supabase
                     .from('users')
                     .select('*', { count: 'exact', head: true });
 
                 document.getElementById('total-users').textContent = usersCount || 0;
 
                 // Total campaigns
-                const { count: campaignsCount } = await supabase
+                const { count: campaignsCount, error: campaignsError } = await supabase
                     .from('campaigns')
                     .select('*', { count: 'exact', head: true });
 
                 document.getElementById('total-campaigns').textContent = campaignsCount || 0;
 
                 // Total coins in system
-                const { data: users } = await supabase
+                const { data: users, error: coinsError } = await supabase
                     .from('users')
                     .select('coins');
                 
@@ -711,331 +667,56 @@
                 document.getElementById('total-coins').textContent = totalCoins;
 
                 // Pending payments
-                const { count: pendingPayments } = await supabase
+                const { count: pendingPayments, error: paymentsError } = await supabase
                     .from('payments')
                     .select('*', { count: 'exact', head: true })
                     .eq('status', 'pending');
 
                 document.getElementById('pending-payments').textContent = pendingPayments || 0;
 
+                // Recent users
+                const { data: recentUsers, error: recentError } = await supabase
+                    .from('users')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+
+                displayRecentUsers(recentUsers);
+
             } catch (error) {
                 console.error('Error loading dashboard stats:', error);
+                showError('recent-users', 'Failed to load data');
             }
         }
 
-        async function loadRecentActivity() {
-            try {
-                // Get recent payments, campaigns, and watch logs
-                const [{ data: payments }, { data: campaigns }, { data: watchLogs }] = await Promise.all([
-                    supabase
-                        .from('payments')
-                        .select('*, users(name)')
-                        .order('timestamp', { ascending: false })
-                        .limit(5),
-                    supabase
-                        .from('campaigns')
-                        .select('*, users(name)')
-                        .order('created_at', { ascending: false })
-                        .limit(5),
-                    supabase
-                        .from('watch_logs')
-                        .select('*, users(name), campaigns(video_title)')
-                        .order('timestamp', { ascending: false })
-                        .limit(5)
-                ]);
-
-                const activities = [];
-                
-                // Process payments
-                if (payments) {
-                    payments.forEach(payment => {
-                        activities.push({
-                            type: 'Payment',
-                            description: `₹${payment.amount} payment ${payment.status}`,
-                            user: payment.users?.name || 'Unknown',
-                            date: payment.timestamp
-                        });
-                    });
-                }
-
-                // Process campaigns
-                if (campaigns) {
-                    campaigns.forEach(campaign => {
-                        activities.push({
-                            type: 'Campaign',
-                            description: `"${campaign.video_title}" created`,
-                            user: campaign.users?.name || 'Unknown',
-                            date: campaign.created_at
-                        });
-                    });
-                }
-
-                // Process watch logs
-                if (watchLogs) {
-                    watchLogs.forEach(log => {
-                        activities.push({
-                            type: 'Watch',
-                            description: `Watched ${log.coins_earned} coins`,
-                            user: log.users?.name || 'Unknown',
-                            date: log.timestamp
-                        });
-                    });
-                }
-
-                // Sort by date and take top 10
-                activities.sort((a, b) => new Date(b.date) - new Date(a.date));
-                const recentActivities = activities.slice(0, 10);
-
-                const container = document.getElementById('recent-activity');
-                
-                if (recentActivities.length === 0) {
-                    container.innerHTML = `
-                        <tr>
-                            <td colspan="4" class="empty-state">
-                                <i class="fas fa-inbox"></i>
-                                <div>No recent activity</div>
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                container.innerHTML = recentActivities.map(activity => `
+        function displayRecentUsers(users) {
+            const container = document.getElementById('recent-users');
+            
+            if (!users || users.length === 0) {
+                container.innerHTML = `
                     <tr>
-                        <td>${activity.type}</td>
-                        <td>${activity.description}</td>
-                        <td>${activity.user}</td>
-                        <td>${new Date(activity.date).toLocaleDateString()}</td>
-                    </tr>
-                `).join('');
-
-            } catch (error) {
-                console.error('Error loading recent activity:', error);
-            }
-        }
-
-        async function loadPayments() {
-            try {
-                const statusFilter = document.getElementById('payment-status-filter').value;
-                
-                let query = supabase
-                    .from('payments')
-                    .select('*, users(name, email)')
-                    .order('timestamp', { ascending: false });
-
-                if (statusFilter !== 'all') {
-                    query = query.eq('status', statusFilter);
-                }
-
-                const { data: payments, error } = await query;
-
-                if (error) throw error;
-
-                const container = document.getElementById('payments-table');
-                
-                if (!payments || payments.length === 0) {
-                    container.innerHTML = `
-                        <tr>
-                            <td colspan="7" class="empty-state">
-                                <i class="fas fa-inbox"></i>
-                                <div>No payments found</div>
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                container.innerHTML = payments.map(payment => `
-                    <tr>
-                        <td>${payment.users?.name || 'N/A'} (${payment.users?.email || 'N/A'})</td>
-                        <td>₹${payment.amount}</td>
-                        <td>${payment.coins_credited || 'Pending'}</td>
-                        <td>${payment.reference_id}</td>
-                        <td>
-                            <span class="status-badge status-${payment.status}">
-                                ${payment.status}
-                            </span>
-                        </td>
-                        <td>${new Date(payment.timestamp).toLocaleDateString()}</td>
-                        <td>
-                            ${payment.status === 'pending' ? `
-                                <button class="btn btn-success btn-sm" onclick="approvePayment('${payment.id}')">
-                                    Approve
-                                </button>
-                                <button class="btn btn-danger btn-sm" onclick="rejectPayment('${payment.id}')">
-                                    Reject
-                                </button>
-                            ` : 'No actions'}
+                        <td colspan="4" class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <div>No users found</div>
                         </td>
                     </tr>
-                `).join('');
-
-            } catch (error) {
-                console.error('Error loading payments:', error);
+                `;
+                return;
             }
-        }
 
-        async function approvePayment(paymentId) {
-            try {
-                // Update payment status
-                const { error: paymentError } = await supabase
-                    .from('payments')
-                    .update({ status: 'approved' })
-                    .eq('id', paymentId);
-
-                if (paymentError) throw paymentError;
-
-                // Get payment details to credit coins
-                const { data: payment, error: getError } = await supabase
-                    .from('payments')
-                    .select('*')
-                    .eq('id', paymentId)
-                    .single();
-
-                if (getError) throw getError;
-
-                // Credit coins to user
-                const { error: coinsError } = await supabase.rpc('increment_coins', {
-                    user_id: payment.user_id,
-                    coin_increment: payment.coins_credited
-                });
-
-                if (coinsError) {
-                    // If RPC fails, manually update coins
-                    const { data: userData } = await supabase
-                        .from('users')
-                        .select('coins')
-                        .eq('id', payment.user_id)
-                        .single();
-                    
-                    await supabase
-                        .from('users')
-                        .update({ coins: (userData.coins || 0) + payment.coins_credited })
-                        .eq('id', payment.user_id);
-                }
-
-                // Create notification for user
-                await supabase
-                    .from('notifications')
-                    .insert([
-                        {
-                            user_id: payment.user_id,
-                            title: 'Payment Approved!',
-                            message: `Your payment of ₹${payment.amount} has been approved. ${payment.coins_credited} coins credited to your account.`,
-                            type: 'success'
-                        }
-                    ]);
-
-                showAlert('Payment approved successfully!', 'success');
-                loadPayments();
-                loadDashboardStats();
-
-            } catch (error) {
-                console.error('Error approving payment:', error);
-                showAlert('Error approving payment', 'error');
-            }
-        }
-
-        async function rejectPayment(paymentId) {
-            try {
-                const { error } = await supabase
-                    .from('payments')
-                    .update({ status: 'rejected' })
-                    .eq('id', paymentId);
-
-                if (error) throw error;
-
-                // Get payment details for notification
-                const { data: payment, error: getError } = await supabase
-                    .from('payments')
-                    .select('*')
-                    .eq('id', paymentId)
-                    .single();
-
-                if (getError) throw getError;
-
-                // Create notification for user
-                await supabase
-                    .from('notifications')
-                    .insert([
-                        {
-                            user_id: payment.user_id,
-                            title: 'Payment Rejected',
-                            message: `Your payment of ₹${payment.amount} has been rejected. Please contact support for more information.`,
-                            type: 'error'
-                        }
-                    ]);
-
-                showAlert('Payment rejected successfully!', 'success');
-                loadPayments();
-
-            } catch (error) {
-                console.error('Error rejecting payment:', error);
-                showAlert('Error rejecting payment', 'error');
-            }
-        }
-
-        async function loadCampaigns() {
-            try {
-                const statusFilter = document.getElementById('campaign-status-filter').value;
-                
-                let query = supabase
-                    .from('campaigns')
-                    .select('*, users(name, email)')
-                    .order('created_at', { ascending: false });
-
-                if (statusFilter !== 'all') {
-                    query = query.eq('status', statusFilter);
-                }
-
-                const { data: campaigns, error } = await query;
-
-                if (error) throw error;
-
-                const container = document.getElementById('campaigns-table');
-                
-                if (!campaigns || campaigns.length === 0) {
-                    container.innerHTML = `
-                        <tr>
-                            <td colspan="7" class="empty-state">
-                                <i class="fas fa-inbox"></i>
-                                <div>No campaigns found</div>
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                container.innerHTML = campaigns.map(campaign => `
-                    <tr>
-                        <td>${campaign.video_title}</td>
-                        <td>${campaign.users?.name || 'N/A'} (${campaign.users?.email || 'N/A'})</td>
-                        <td>${campaign.current_intervals_completed}/${campaign.total_intervals}</td>
-                        <td>${campaign.total_coins_spent || 0}</td>
-                        <td>
-                            <span class="status-badge status-${campaign.status}">
-                                ${campaign.status}
-                            </span>
-                        </td>
-                        <td>${new Date(campaign.created_at).toLocaleDateString()}</td>
-                        <td>
-                            <button class="btn btn-warning btn-sm" onclick="pauseCampaign('${campaign.id}')">
-                                ${campaign.status === 'active' ? 'Pause' : 'Resume'}
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteCampaign('${campaign.id}')">
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
-                `).join('');
-
-            } catch (error) {
-                console.error('Error loading campaigns:', error);
-            }
+            container.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.name || 'N/A'}</td>
+                    <td>${user.email}</td>
+                    <td>${user.coins || 0}</td>
+                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                </tr>
+            `).join('');
         }
 
         async function loadUsers() {
             try {
+                showLoading('users-table');
                 const searchTerm = document.getElementById('user-search').value;
                 
                 let query = supabase
@@ -1073,44 +754,192 @@
                     })
                 );
 
-                const container = document.getElementById('users-table');
-                
-                if (!usersWithStats || usersWithStats.length === 0) {
-                    container.innerHTML = `
-                        <tr>
-                            <td colspan="7" class="empty-state">
-                                <i class="fas fa-inbox"></i>
-                                <div>No users found</div>
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                container.innerHTML = usersWithStats.map(user => `
-                    <tr>
-                        <td>${user.name || 'N/A'}</td>
-                        <td>${user.email}</td>
-                        <td>${user.coins || 0}</td>
-                        <td>${user.campaigns_count}</td>
-                        <td>${user.referrals_count}</td>
-                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
-                        <td>
-                            <button class="btn btn-warning btn-sm" onclick="adjustCoins('${user.id}')">
-                                Adjust Coins
-                            </button>
-                            ${!user.is_admin ? `
-                                <button class="btn btn-danger btn-sm" onclick="deleteUser('${user.id}')">
-                                    Delete
-                                </button>
-                            ` : ''}
-                        </td>
-                    </tr>
-                `).join('');
+                displayUsers(usersWithStats);
 
             } catch (error) {
                 console.error('Error loading users:', error);
+                showError('users-table', 'Failed to load users');
             }
+        }
+
+        function displayUsers(users) {
+            const container = document.getElementById('users-table');
+            
+            if (!users || users.length === 0) {
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <div>No users found</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            container.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.name || 'N/A'}</td>
+                    <td>${user.email}</td>
+                    <td>${user.coins || 0}</td>
+                    <td>${user.campaigns_count}</td>
+                    <td>${user.referrals_count}</td>
+                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <span class="status-badge status-active">
+                            Active
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadCampaigns() {
+            try {
+                showLoading('campaigns-table');
+                const statusFilter = document.getElementById('campaign-status-filter').value;
+                
+                let query = supabase
+                    .from('campaigns')
+                    .select('*, users(name, email)')
+                    .order('created_at', { ascending: false });
+
+                if (statusFilter !== 'all') {
+                    query = query.eq('status', statusFilter);
+                }
+
+                const { data: campaigns, error } = await query;
+
+                if (error) throw error;
+
+                displayCampaigns(campaigns);
+
+            } catch (error) {
+                console.error('Error loading campaigns:', error);
+                showError('campaigns-table', 'Failed to load campaigns');
+            }
+        }
+
+        function displayCampaigns(campaigns) {
+            const container = document.getElementById('campaigns-table');
+            
+            if (!campaigns || campaigns.length === 0) {
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <i class="fas fa-video"></i>
+                            <div>No campaigns found</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            container.innerHTML = campaigns.map(campaign => `
+                <tr>
+                    <td>${campaign.video_title}</td>
+                    <td>${campaign.users?.name || 'N/A'} (${campaign.users?.email || 'N/A'})</td>
+                    <td>${campaign.current_intervals_completed}/${campaign.total_intervals}</td>
+                    <td>${campaign.total_coins_spent || 0}</td>
+                    <td>
+                        <span class="status-badge status-${campaign.status}">
+                            ${campaign.status}
+                        </span>
+                    </td>
+                    <td>${new Date(campaign.created_at).toLocaleDateString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadPayments() {
+            try {
+                showLoading('payments-table');
+                const statusFilter = document.getElementById('payment-status-filter').value;
+                
+                let query = supabase
+                    .from('payments')
+                    .select('*, users(name, email)')
+                    .order('timestamp', { ascending: false });
+
+                if (statusFilter !== 'all') {
+                    query = query.eq('status', statusFilter);
+                }
+
+                const { data: payments, error } = await query;
+
+                if (error) throw error;
+
+                displayPayments(payments);
+
+            } catch (error) {
+                console.error('Error loading payments:', error);
+                showError('payments-table', 'Failed to load payments');
+            }
+        }
+
+        function displayPayments(payments) {
+            const container = document.getElementById('payments-table');
+            
+            if (!payments || payments.length === 0) {
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i class="fas fa-receipt"></i>
+                            <div>No payments found</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            container.innerHTML = payments.map(payment => `
+                <tr>
+                    <td>${payment.users?.name || 'N/A'} (${payment.users?.email || 'N/A'})</td>
+                    <td>₹${payment.amount}</td>
+                    <td>${payment.coins_credited || 'Pending'}</td>
+                    <td>${payment.reference_id}</td>
+                    <td>
+                        <span class="status-badge status-${payment.status}">
+                            ${payment.status}
+                        </span>
+                    </td>
+                    <td>${new Date(payment.timestamp).toLocaleDateString()}</td>
+                    <td>
+                        ${payment.status === 'pending' ? `
+                            <button class="btn btn-success btn-sm" onclick="showAlert('Payment approval would require database write access', 'success')">
+                                Approve
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="showAlert('Payment rejection would require database write access', 'error')">
+                                Reject
+                            </button>
+                        ` : 'No actions'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showLoading(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <tr>
+                    <td colspan="10" class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <div>Loading data...</div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function showError(containerId, message) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <tr>
+                    <td colspan="10" class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>${message}</div>
+                    </td>
+                </tr>
+            `;
         }
 
         function showAlert(message, type) {
@@ -1124,87 +953,10 @@
             }, 5000);
         }
 
-        async function logout() {
-            await supabase.auth.signOut();
-            window.location.href = 'index.html';
-        }
-
-        // Placeholder functions for other actions
-        async function pauseCampaign(campaignId) {
-            try {
-                const { data: campaign } = await supabase
-                    .from('campaigns')
-                    .select('status')
-                    .eq('id', campaignId)
-                    .single();
-                    
-                const newStatus = campaign.status === 'active' ? 'paused' : 'active';
-                
-                await supabase
-                    .from('campaigns')
-                    .update({ status: newStatus })
-                    .eq('id', campaignId);
-                    
-                showAlert(`Campaign ${newStatus} successfully!`, 'success');
-                loadCampaigns();
-            } catch (error) {
-                console.error('Error pausing campaign:', error);
-                showAlert('Error updating campaign', 'error');
-            }
-        }
-
-        async function deleteCampaign(campaignId) {
-            if (confirm('Are you sure you want to delete this campaign?')) {
-                try {
-                    await supabase
-                        .from('campaigns')
-                        .delete()
-                        .eq('id', campaignId);
-                        
-                    showAlert('Campaign deleted successfully!', 'success');
-                    loadCampaigns();
-                } catch (error) {
-                    console.error('Error deleting campaign:', error);
-                    showAlert('Error deleting campaign', 'error');
-                }
-            }
-        }
-
-        async function adjustCoins(userId) {
-            const newCoins = prompt('Enter new coin balance:');
-            if (newCoins !== null && !isNaN(newCoins)) {
-                try {
-                    await supabase
-                        .from('users')
-                        .update({ coins: parseInt(newCoins) })
-                        .eq('id', userId);
-                        
-                    showAlert('Coins adjusted successfully!', 'success');
-                    loadUsers();
-                    loadDashboardStats();
-                } catch (error) {
-                    console.error('Error adjusting coins:', error);
-                    showAlert('Error adjusting coins', 'error');
-                }
-            }
-        }
-
-        async function deleteUser(userId) {
-            if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-                try {
-                    await supabase
-                        .from('users')
-                        .delete()
-                        .eq('id', userId);
-                        
-                    showAlert('User deleted successfully!', 'success');
-                    loadUsers();
-                    loadDashboardStats();
-                } catch (error) {
-                    console.error('Error deleting user:', error);
-                    showAlert('Error deleting user', 'error');
-                }
-            }
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            localStorage.removeItem('adminLoginTime');
+            window.location.href = 'admin-login-simple.html';
         }
     </script>
 </body>
