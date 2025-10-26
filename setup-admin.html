@@ -3,18 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Setup Admin - Social Growth</title>
+    <title>Admin Login - Social Growth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        :root {
+            --white: #ffffff;
+            --green: #10B981;
+            --dark-green: #059669;
+            --black: #111827;
+            --gray: #6B7280;
+            --light-gray: #F9FAFB;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 50%, #10b981 100%);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--black);
+            background: linear-gradient(135deg, var(--white) 0%, var(--light-gray) 50%, var(--green) 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -22,258 +34,262 @@
             padding: 20px;
         }
 
-        .container {
-            background: white;
+        .auth-container {
+            background-color: var(--white);
             padding: 40px;
             border-radius: 16px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
             width: 100%;
+            max-width: 450px;
         }
 
         .logo {
-            text-align: center;
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 30px;
-            color: #111827;
-        }
-
-        .step {
-            margin-bottom: 25px;
-            padding: 20px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-        }
-
-        .step-number {
-            background: #10b981;
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: var(--black);
+            margin-bottom: 30px;
+        }
+
+        .logo-icon {
             margin-right: 10px;
+            font-size: 2rem;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--black);
             font-weight: 600;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--gray);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--black);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
         }
 
         .btn {
-            background: #10b981;
-            color: white;
-            padding: 12px 24px;
-            border: none;
+            width: 100%;
+            padding: 12px;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            width: 100%;
+            transition: all 0.3s;
+            border: none;
+            font-size: 1rem;
             margin-top: 10px;
         }
 
-        .btn:hover {
-            background: #059669;
+        .btn-primary {
+            background-color: var(--green);
+            color: var(--white);
         }
 
-        .result {
-            margin-top: 15px;
+        .btn-primary:hover {
+            background-color: var(--dark-green);
+        }
+
+        .btn-primary:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+        }
+
+        .user-login {
+            text-align: center;
+            margin-top: 25px;
+            color: var(--gray);
+        }
+
+        .user-login a {
+            color: var(--green);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .user-login a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
             padding: 12px;
-            border-radius: 6px;
+            border-radius: 8px;
+            margin-bottom: 20px;
             display: none;
         }
 
-        .success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
+        .alert-success {
+            background-color: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
         }
 
-        .error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
-        }
-
-        .user-list {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            padding: 10px;
-            margin-top: 10px;
-        }
-
-        .user-item {
-            padding: 8px;
-            border-bottom: 1px solid #f3f4f6;
-            cursor: pointer;
-        }
-
-        .user-item:hover {
-            background: #f9fafb;
-        }
-
-        .user-item.selected {
-            background: #d1fae5;
+        .alert-error {
+            background-color: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="auth-container">
         <div class="logo">
-            <span>🚀</span> Social Growth - Admin Setup
+            <span class="logo-icon">🔐</span>
+            Admin Panel
         </div>
+        
+        <h1>Admin Login</h1>
+        <p class="subtitle">Access the Social Growth admin dashboard</p>
 
-        <!-- Step 1: Check Existing Users -->
-        <div class="step">
-            <h3><span class="step-number">1</span> Check Existing Users</h3>
-            <p>View all users in your system and select one to make admin.</p>
-            <button class="btn" onclick="loadUsers()">Load Users</button>
-            
-            <div class="user-list" id="userList">
-                <div style="text-align: center; padding: 20px; color: #6b7280;">
-                    Click "Load Users" to see all users
-                </div>
+        <div id="alert" class="alert"></div>
+
+        <form id="adminLoginForm">
+            <div class="form-group">
+                <label for="email">Admin Email</label>
+                <input type="email" id="email" name="email" required>
             </div>
-        </div>
 
-        <!-- Step 2: Make User Admin -->
-        <div class="step">
-            <h3><span class="step-number">2</span> Make User Admin</h3>
-            <p>Select a user from above and make them admin.</p>
-            <button class="btn" onclick="makeAdmin()" id="makeAdminBtn" disabled>
-                Make Selected User Admin
-            </button>
-            <div class="result" id="resultStep2"></div>
-        </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
 
-        <!-- Step 3: Test Admin Access -->
-        <div class="step">
-            <h3><span class="step-number">3</span> Test Admin Access</h3>
-            <p>Once you've made a user admin, test the admin panel.</p>
-            <button class="btn" onclick="testAdmin()" id="testAdminBtn">
-                Go to Admin Panel
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                Sign In as Admin
             </button>
-            <div class="result" id="resultStep3"></div>
+        </form>
+
+        <div class="user-login">
+            <a href="login.html">← Back to User Login</a>
         </div>
     </div>
 
     <script>
+        // Initialize Supabase
         const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iywicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        let selectedUserId = null;
+        // Check if user is already logged in and is admin
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                checkAdminStatus(session.user);
+            }
+        });
 
-        // Load all users
-        async function loadUsers() {
-            const userList = document.getElementById('userList');
-            const resultDiv = document.getElementById('resultStep2');
-            
-            userList.innerHTML = '<div style="text-align: center; padding: 20px; color: #6b7280;">Loading users...</div>';
-
+        async function checkAdminStatus(user) {
             try {
-                const { data: users, error } = await supabase
+                const { data: userData, error } = await supabase
                     .from('users')
-                    .select('id, email, name, is_admin, created_at')
-                    .order('created_at', { ascending: false });
+                    .select('is_admin')
+                    .eq('id', user.id)
+                    .single();
 
-                if (error) throw error;
-
-                if (!users || users.length === 0) {
-                    userList.innerHTML = '<div style="text-align: center; padding: 20px; color: #6b7280;">No users found. Please sign up first.</div>';
-                    return;
+                if (!error && userData && userData.is_admin) {
+                    window.location.href = 'admin.html';
                 }
-
-                userList.innerHTML = users.map(user => `
-                    <div class="user-item ${user.is_admin ? 'selected' : ''}" 
-                         onclick="selectUser('${user.id}', '${user.email}', ${user.is_admin})"
-                         style="${user.is_admin ? 'border-left: 4px solid #10b981;' : ''}">
-                        <strong>${user.email}</strong><br>
-                        <small>Name: ${user.name || 'N/A'} | Admin: ${user.is_admin ? '✅ Yes' : '❌ No'}</small>
-                    </div>
-                `).join('');
-
-                resultDiv.style.display = 'none';
-
             } catch (error) {
-                console.error('Error loading users:', error);
-                userList.innerHTML = `<div style="text-align: center; padding: 20px; color: #ef4444;">
-                    Error loading users: ${error.message}
-                </div>`;
+                console.log('User is not admin or error checking status');
             }
         }
 
-        // Select a user
-        function selectUser(userId, email, isAdmin) {
-            if (isAdmin) {
-                alert('This user is already an admin!');
-                return;
-            }
-
-            // Remove selection from all users
-            document.querySelectorAll('.user-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-
-            // Add selection to clicked user
-            event.target.closest('.user-item').classList.add('selected');
-
-            selectedUserId = userId;
-            document.getElementById('makeAdminBtn').disabled = false;
+        document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            document.getElementById('resultStep2').innerHTML = 
-                `<div class="success">Selected: ${email} - Ready to make admin</div>`;
-            document.getElementById('resultStep2').style.display = 'block';
-        }
-
-        // Make user admin
-        async function makeAdmin() {
-            if (!selectedUserId) {
-                alert('Please select a user first!');
-                return;
-            }
-
-            const resultDiv = document.getElementById('resultStep2');
-            const makeAdminBtn = document.getElementById('makeAdminBtn');
-
-            makeAdminBtn.disabled = true;
-            makeAdminBtn.textContent = 'Making Admin...';
-
+            const submitBtn = document.getElementById('submitBtn');
+            const alert = document.getElementById('alert');
+            
+            // Get form values
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing In...';
+            
             try {
-                const { error } = await supabase
-                    .from('users')
-                    .update({ is_admin: true })
-                    .eq('id', selectedUserId);
+                // Sign in user with Supabase Auth
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (data.user) {
+                    // Check if user is admin
+                    const { data: userData, error: userError } = await supabase
+                        .from('users')
+                        .select('is_admin')
+                        .eq('id', data.user.id)
+                        .single();
 
-                if (error) throw error;
+                    if (userError || !userData || !userData.is_admin) {
+                        await supabase.auth.signOut();
+                        throw new Error('Access denied. Admin privileges required.');
+                    }
 
-                resultDiv.innerHTML = `<div class="success">✅ User successfully made admin! You can now access the admin panel.</div>`;
-                resultDiv.style.display = 'block';
-
-                // Enable test button
-                document.getElementById('testAdminBtn').style.display = 'block';
-
-                // Reload users to show updated status
-                setTimeout(loadUsers, 1000);
-
+                    // Redirect to admin panel
+                    window.location.href = 'admin.html';
+                }
+                
             } catch (error) {
-                console.error('Error making user admin:', error);
-                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
-                resultDiv.style.display = 'block';
+                console.error('Admin login error:', error);
+                let errorMessage = error.message || 'Invalid email or password';
+                
+                if (error.message.includes('Invalid login credentials')) {
+                    errorMessage = 'Invalid email or password. Please try again.';
+                } else if (error.message.includes('Access denied')) {
+                    errorMessage = 'Access denied. Admin privileges required.';
+                }
+                
+                showAlert(errorMessage, 'error');
             } finally {
-                makeAdminBtn.disabled = false;
-                makeAdminBtn.textContent = 'Make Selected User Admin';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In as Admin';
             }
+        });
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
         }
-
-        // Test admin access
-        function testAdmin() {
-            window.location.href = 'admin-login.html';
-        }
-
-        // Load users when page loads
-        window.addEventListener('load', loadUsers);
     </script>
 </body>
 </html>
