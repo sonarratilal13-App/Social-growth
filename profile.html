@@ -233,6 +233,59 @@
             color: var(--white);
         }
 
+        .social-sharing {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .social-sharing h4 {
+            margin-bottom: 15px;
+            color: var(--black);
+            font-weight: 500;
+        }
+
+        .social-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .social-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .whatsapp {
+            background-color: #25D366;
+        }
+
+        .facebook {
+            background-color: #3b5998;
+        }
+
+        .twitter {
+            background-color: #1DA1F2;
+        }
+
+        .telegram {
+            background-color: #0088cc;
+        }
+
         .payment-history {
             margin-top: 30px;
         }
@@ -429,6 +482,25 @@
                 <button class="btn btn-outline" onclick="shareReferral()">
                     <i class="fas fa-share"></i> Share
                 </button>
+                
+                <!-- Social Media Sharing Buttons -->
+                <div class="social-sharing">
+                    <h4>Share on Social Media</h4>
+                    <div class="social-buttons">
+                        <button class="social-btn whatsapp" onclick="shareOnWhatsApp()">
+                            <i class="fab fa-whatsapp"></i>
+                        </button>
+                        <button class="social-btn facebook" onclick="shareOnFacebook()">
+                            <i class="fab fa-facebook-f"></i>
+                        </button>
+                        <button class="social-btn twitter" onclick="shareOnTwitter()">
+                            <i class="fab fa-twitter"></i>
+                        </button>
+                        <button class="social-btn telegram" onclick="shareOnTelegram()">
+                            <i class="fab fa-telegram-plane"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -665,6 +737,58 @@
             } else {
                 copyReferralCode();
             }
+        }
+
+        // Social Media Sharing Functions
+        function shareOnWhatsApp() {
+            const referralCode = document.getElementById('referral-code').textContent;
+            if (referralCode === 'Loading...' || referralCode === 'Not available') {
+                alert('Referral code not available yet. Please refresh the page.');
+                return;
+            }
+            
+            const referralLink = `${window.location.origin}/signup.html?ref=${referralCode}`;
+            const message = `Join Social Growth and earn coins by watching YouTube videos! Use my referral code: ${referralCode}. Sign up here: ${referralLink}`;
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        function shareOnFacebook() {
+            const referralCode = document.getElementById('referral-code').textContent;
+            if (referralCode === 'Loading...' || referralCode === 'Not available') {
+                alert('Referral code not available yet. Please refresh the page.');
+                return;
+            }
+            
+            const referralLink = `${window.location.origin}/signup.html?ref=${referralCode}`;
+            const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}&quote=${encodeURIComponent('Join Social Growth and earn coins by watching YouTube videos!')}`;
+            window.open(url, '_blank', 'width=600,height=400');
+        }
+
+        function shareOnTwitter() {
+            const referralCode = document.getElementById('referral-code').textContent;
+            if (referralCode === 'Loading...' || referralCode === 'Not available') {
+                alert('Referral code not available yet. Please refresh the page.');
+                return;
+            }
+            
+            const referralLink = `${window.location.origin}/signup.html?ref=${referralCode}`;
+            const message = `Join Social Growth and earn coins by watching YouTube videos! Use my referral code: ${referralCode}`;
+            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}&url=${encodeURIComponent(referralLink)}`;
+            window.open(url, '_blank', 'width=600,height=400');
+        }
+
+        function shareOnTelegram() {
+            const referralCode = document.getElementById('referral-code').textContent;
+            if (referralCode === 'Loading...' || referralCode === 'Not available') {
+                alert('Referral code not available yet. Please refresh the page.');
+                return;
+            }
+            
+            const referralLink = `${window.location.origin}/signup.html?ref=${referralCode}`;
+            const message = `Join Social Growth and earn coins by watching YouTube videos! Use my referral code: ${referralCode}. Sign up here: ${referralLink}`;
+            const url = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
         }
 
         function showAlert(message, type) {
