@@ -85,15 +85,6 @@
             gap: 15px;
         }
 
-        .admin-badge {
-            background-color: var(--green);
-            color: var(--white);
-            padding: 5px 10px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
         .logout-btn {
             background: none;
             border: none;
@@ -329,32 +320,6 @@
             font-size: 0.9rem;
         }
 
-        .access-denied {
-            text-align: center;
-            padding: 100px 20px;
-            background-color: var(--white);
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            margin: 50px auto;
-            max-width: 500px;
-        }
-
-        .access-denied i {
-            font-size: 4rem;
-            color: #EF4444;
-            margin-bottom: 20px;
-        }
-
-        .access-denied h2 {
-            color: var(--black);
-            margin-bottom: 10px;
-        }
-
-        .access-denied p {
-            color: var(--gray);
-            margin-bottom: 20px;
-        }
-
         @media (max-width: 768px) {
             .admin-header {
                 flex-direction: column;
@@ -392,9 +357,6 @@
             </div>
 
             <div class="user-info">
-                <div class="admin-badge">
-                    <i class="fas fa-crown"></i> Owner
-                </div>
                 <button class="logout-btn" onclick="logout()">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
@@ -404,16 +366,6 @@
 
     <div class="admin-content container">
         <div id="alert" class="alert"></div>
-
-        <!-- Access Denied Message -->
-        <div id="access-denied" class="access-denied" style="display: none;">
-            <i class="fas fa-ban"></i>
-            <h2>Access Denied</h2>
-            <p>This area is strictly for website administrators and owners only.</p>
-            <button class="btn btn-primary" onclick="window.location.href='dashboard.html'">
-                Go to User Dashboard
-            </button>
-        </div>
 
         <!-- Dashboard Tab -->
         <div class="tab-content active" id="dashboard-tab">
@@ -600,13 +552,12 @@
                                 <th>Campaigns</th>
                                 <th>Referrals</th>
                                 <th>Joined</th>
-                                <th>Role</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="users-table">
                             <tr>
-                                <td colspan="8" class="empty-state">
+                                <td colspan="7" class="empty-state">
                                     <i class="fas fa-spinner fa-spin"></i>
                                     <div>Loading users...</div>
                                 </td>
@@ -625,64 +576,70 @@
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         let currentUser = null;
-        let isAdmin = false;
 
-        // Check authentication and STRICT admin status
+        // Check authentication and admin status
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (!session) {
-                // Not logged in - redirect to ADMIN login
                 window.location.href = 'admin-login.html';
             } else {
                 currentUser = session.user;
-                checkStrictAdminStatus();
+                checkAdminStatus();
             }
         });
 
-        async function checkStrictAdminStatus() {
+        async function checkAdminStatus() {
             try {
-                console.log('🔐 Checking STRICT admin status for user:', currentUser.id);
-                
                 const { data: userData, error } = await supabase
                     .from('users')
-                    .select('is_admin, email, name')
+                    .select('is_admin')
                     .eq('id', currentUser.id)
                     .single();
 
                 if (error) {
-                    console.error('❌ Database error:', error);
-                    showAccessDenied();
+                    console.error('Error checking admin status:', error);
+                    // Create admin user if doesn't exist
+                    await createAdminUser(currentUser);
+                } else if (!userData.is_admin) {
+                    window.location.href = 'dashboard.html';
                     return;
                 }
 
-                console.log('👤 User data:', userData);
-
-                // STRICT CHECK: Only allow if is_admin is EXPLICITLY true
-                if (!userData || userData.is_admin !== true) {
-                    console.log('🚫 User is NOT admin, showing access denied...');
-                    showAccessDenied();
-                    return;
-                }
-
-                console.log('✅ User is ADMIN, loading admin panel...');
-                isAdmin = true;
-                
                 // Load initial data
                 loadDashboardStats();
                 loadRecentActivity();
                 setupTabNavigation();
 
             } catch (error) {
-                console.error('❌ Error checking admin status:', error);
-                showAccessDenied();
+                console.error('Error in admin check:', error);
+                window.location.href = 'dashboard.html';
             }
         }
 
-        function showAccessDenied() {
-            document.getElementById('access-denied').style.display = 'block';
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.style.display = 'none';
-            });
-            document.querySelector('.admin-nav').style.display = 'none';
+        async function createAdminUser(authUser) {
+            try {
+                const { error } = await supabase
+                    .from('users')
+                    .insert([
+                        { 
+                            id: authUser.id,
+                            email: authUser.email,
+                            name: 'Admin User',
+                            referral_code: 'ADMIN-' + Math.random().toString(36).substr(2, 8).toUpperCase(),
+                            coins: 0,
+                            is_admin: true
+                        }
+                    ]);
+                    
+                if (error) {
+                    console.error('Error creating admin user:', error);
+                    throw error;
+                }
+                
+                console.log('Admin user created successfully');
+            } catch (error) {
+                console.error('Error creating admin user:', error);
+                throw error;
+            }
         }
 
         function setupTabNavigation() {
@@ -690,8 +647,6 @@
             
             tabs.forEach(tab => {
                 tab.addEventListener('click', function() {
-                    if (!isAdmin) return;
-                    
                     // Remove active class from all tabs
                     tabs.forEach(t => t.classList.remove('active'));
                     // Add active class to clicked tab
@@ -732,43 +687,35 @@
         }
 
         async function loadDashboardStats() {
-            if (!isAdmin) return;
-            
             try {
-                console.log('Loading dashboard stats...');
-                
                 // Total users
-                const { count: usersCount, error: usersError } = await supabase
+                const { count: usersCount } = await supabase
                     .from('users')
                     .select('*', { count: 'exact', head: true });
 
-                if (usersError) console.error('Users count error:', usersError);
                 document.getElementById('total-users').textContent = usersCount || 0;
 
                 // Total campaigns
-                const { count: campaignsCount, error: campaignsError } = await supabase
+                const { count: campaignsCount } = await supabase
                     .from('campaigns')
                     .select('*', { count: 'exact', head: true });
 
-                if (campaignsError) console.error('Campaigns count error:', campaignsError);
                 document.getElementById('total-campaigns').textContent = campaignsCount || 0;
 
                 // Total coins in system
-                const { data: users, error: usersDataError } = await supabase
+                const { data: users } = await supabase
                     .from('users')
                     .select('coins');
                 
-                if (usersDataError) console.error('Users data error:', usersDataError);
                 const totalCoins = users ? users.reduce((sum, user) => sum + (user.coins || 0), 0) : 0;
                 document.getElementById('total-coins').textContent = totalCoins;
 
                 // Pending payments
-                const { count: pendingPayments, error: paymentsError } = await supabase
+                const { count: pendingPayments } = await supabase
                     .from('payments')
                     .select('*', { count: 'exact', head: true })
                     .eq('status', 'pending');
 
-                if (paymentsError) console.error('Payments error:', paymentsError);
                 document.getElementById('pending-payments').textContent = pendingPayments || 0;
 
             } catch (error) {
@@ -777,11 +724,7 @@
         }
 
         async function loadRecentActivity() {
-            if (!isAdmin) return;
-            
             try {
-                console.log('Loading recent activity...');
-                
                 // Get recent payments, campaigns, and watch logs
                 const [{ data: payments }, { data: campaigns }, { data: watchLogs }] = await Promise.all([
                     supabase
@@ -872,8 +815,6 @@
         }
 
         async function loadPayments() {
-            if (!isAdmin) return;
-            
             try {
                 const statusFilter = document.getElementById('payment-status-filter').value;
                 
@@ -931,16 +872,11 @@
 
             } catch (error) {
                 console.error('Error loading payments:', error);
-                showAlert('Error loading payments', 'error');
             }
         }
 
         async function approvePayment(paymentId) {
-            if (!isAdmin) return;
-            
             try {
-                console.log('Approving payment:', paymentId);
-                
                 // Update payment status
                 const { error: paymentError } = await supabase
                     .from('payments')
@@ -959,12 +895,24 @@
                 if (getError) throw getError;
 
                 // Credit coins to user
-                const { error: coinsError } = await supabase
-                    .from('users')
-                    .update({ coins: supabase.sql`coins + ${payment.coins_credited}` })
-                    .eq('id', payment.user_id);
+                const { error: coinsError } = await supabase.rpc('increment_coins', {
+                    user_id: payment.user_id,
+                    coin_increment: payment.coins_credited
+                });
 
-                if (coinsError) throw coinsError;
+                if (coinsError) {
+                    // If RPC fails, manually update coins
+                    const { data: userData } = await supabase
+                        .from('users')
+                        .select('coins')
+                        .eq('id', payment.user_id)
+                        .single();
+                    
+                    await supabase
+                        .from('users')
+                        .update({ coins: (userData.coins || 0) + payment.coins_credited })
+                        .eq('id', payment.user_id);
+                }
 
                 // Create notification for user
                 await supabase
@@ -989,8 +937,6 @@
         }
 
         async function rejectPayment(paymentId) {
-            if (!isAdmin) return;
-            
             try {
                 const { error } = await supabase
                     .from('payments')
@@ -1030,8 +976,6 @@
         }
 
         async function loadCampaigns() {
-            if (!isAdmin) return;
-            
             try {
                 const statusFilter = document.getElementById('campaign-status-filter').value;
                 
@@ -1064,7 +1008,7 @@
 
                 container.innerHTML = campaigns.map(campaign => `
                     <tr>
-                        <td>${campaign.video_title || 'Untitled Campaign'}</td>
+                        <td>${campaign.video_title}</td>
                         <td>${campaign.users?.name || 'N/A'} (${campaign.users?.email || 'N/A'})</td>
                         <td>${campaign.current_intervals_completed}/${campaign.total_intervals}</td>
                         <td>${campaign.total_coins_spent || 0}</td>
@@ -1076,7 +1020,7 @@
                         <td>${new Date(campaign.created_at).toLocaleDateString()}</td>
                         <td>
                             <button class="btn btn-warning btn-sm" onclick="pauseCampaign('${campaign.id}')">
-                                Pause
+                                ${campaign.status === 'active' ? 'Pause' : 'Resume'}
                             </button>
                             <button class="btn btn-danger btn-sm" onclick="deleteCampaign('${campaign.id}')">
                                 Delete
@@ -1087,13 +1031,10 @@
 
             } catch (error) {
                 console.error('Error loading campaigns:', error);
-                showAlert('Error loading campaigns', 'error');
             }
         }
 
         async function loadUsers() {
-            if (!isAdmin) return;
-            
             try {
                 const searchTerm = document.getElementById('user-search').value;
                 
@@ -1127,8 +1068,7 @@
                         return {
                             ...user,
                             campaigns_count: campaignsCount || 0,
-                            referrals_count: referralsCount || 0,
-                            role: user.is_admin ? 'Admin' : 'User'
+                            referrals_count: referralsCount || 0
                         };
                     })
                 );
@@ -1138,7 +1078,7 @@
                 if (!usersWithStats || usersWithStats.length === 0) {
                     container.innerHTML = `
                         <tr>
-                            <td colspan="8" class="empty-state">
+                            <td colspan="7" class="empty-state">
                                 <i class="fas fa-inbox"></i>
                                 <div>No users found</div>
                             </td>
@@ -1156,11 +1096,6 @@
                         <td>${user.referrals_count}</td>
                         <td>${new Date(user.created_at).toLocaleDateString()}</td>
                         <td>
-                            <span class="status-badge ${user.is_admin ? 'status-approved' : 'status-pending'}">
-                                ${user.role}
-                            </span>
-                        </td>
-                        <td>
                             <button class="btn btn-warning btn-sm" onclick="adjustCoins('${user.id}')">
                                 Adjust Coins
                             </button>
@@ -1175,7 +1110,6 @@
 
             } catch (error) {
                 console.error('Error loading users:', error);
-                showAlert('Error loading users', 'error');
             }
         }
 
@@ -1196,30 +1130,80 @@
         }
 
         // Placeholder functions for other actions
-        function pauseCampaign(campaignId) {
-            if (!isAdmin) return;
-            alert(`Pause campaign ${campaignId} - Feature coming soon!`);
-        }
-
-        function deleteCampaign(campaignId) {
-            if (!isAdmin) return;
-            if (confirm('Are you sure you want to delete this campaign?')) {
-                alert(`Delete campaign ${campaignId} - Feature coming soon!`);
+        async function pauseCampaign(campaignId) {
+            try {
+                const { data: campaign } = await supabase
+                    .from('campaigns')
+                    .select('status')
+                    .eq('id', campaignId)
+                    .single();
+                    
+                const newStatus = campaign.status === 'active' ? 'paused' : 'active';
+                
+                await supabase
+                    .from('campaigns')
+                    .update({ status: newStatus })
+                    .eq('id', campaignId);
+                    
+                showAlert(`Campaign ${newStatus} successfully!`, 'success');
+                loadCampaigns();
+            } catch (error) {
+                console.error('Error pausing campaign:', error);
+                showAlert('Error updating campaign', 'error');
             }
         }
 
-        function adjustCoins(userId) {
-            if (!isAdmin) return;
+        async function deleteCampaign(campaignId) {
+            if (confirm('Are you sure you want to delete this campaign?')) {
+                try {
+                    await supabase
+                        .from('campaigns')
+                        .delete()
+                        .eq('id', campaignId);
+                        
+                    showAlert('Campaign deleted successfully!', 'success');
+                    loadCampaigns();
+                } catch (error) {
+                    console.error('Error deleting campaign:', error);
+                    showAlert('Error deleting campaign', 'error');
+                }
+            }
+        }
+
+        async function adjustCoins(userId) {
             const newCoins = prompt('Enter new coin balance:');
             if (newCoins !== null && !isNaN(newCoins)) {
-                alert(`Adjust coins for user ${userId} to ${newCoins} - Feature coming soon!`);
+                try {
+                    await supabase
+                        .from('users')
+                        .update({ coins: parseInt(newCoins) })
+                        .eq('id', userId);
+                        
+                    showAlert('Coins adjusted successfully!', 'success');
+                    loadUsers();
+                    loadDashboardStats();
+                } catch (error) {
+                    console.error('Error adjusting coins:', error);
+                    showAlert('Error adjusting coins', 'error');
+                }
             }
         }
 
-        function deleteUser(userId) {
-            if (!isAdmin) return;
+        async function deleteUser(userId) {
             if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-                alert(`Delete user ${userId} - Feature coming soon!`);
+                try {
+                    await supabase
+                        .from('users')
+                        .delete()
+                        .eq('id', userId);
+                        
+                    showAlert('User deleted successfully!', 'success');
+                    loadUsers();
+                    loadDashboardStats();
+                } catch (error) {
+                    console.error('Error deleting user:', error);
+                    showAlert('Error deleting user', 'error');
+                }
             }
         }
     </script>
