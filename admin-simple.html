@@ -331,6 +331,15 @@
             margin-bottom: 10px;
         }
 
+        .debug-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
         @media (max-width: 768px) {
             .admin-header {
                 flex-direction: column;
@@ -434,11 +443,12 @@
                                 <th>Email</th>
                                 <th>Coins</th>
                                 <th>Joined</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="recent-users">
                             <tr>
-                                <td colspan="4" class="loading">
+                                <td colspan="5" class="loading">
                                     <i class="fas fa-spinner fa-spin"></i>
                                     <div>Loading users...</div>
                                 </td>
@@ -455,24 +465,29 @@
             
             <div class="filters">
                 <div class="filter-group">
-                    <input type="text" id="user-search" placeholder="Search users...">
+                    <input type="text" id="user-search" placeholder="Search users by name or email...">
                 </div>
                 <button class="btn btn-success" onclick="loadUsers()">
                     <i class="fas fa-refresh"></i> Refresh
                 </button>
+                <button class="btn btn-warning" onclick="showDebugInfo()">
+                    <i class="fas fa-bug"></i> Debug
+                </button>
             </div>
+
+            <div id="debug-info" class="debug-info" style="display: none;"></div>
 
             <div class="data-table">
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
+                                <th>ID</th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Coins</th>
-                                <th>Campaigns</th>
-                                <th>Referrals</th>
-                                <th>Joined</th>
+                                <th>Referral Code</th>
+                                <th>Joined Date</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -480,7 +495,7 @@
                             <tr>
                                 <td colspan="7" class="loading">
                                     <i class="fas fa-spinner fa-spin"></i>
-                                    <div>Loading users...</div>
+                                    <div>Loading users data...</div>
                                 </td>
                             </tr>
                         </tbody>
@@ -563,12 +578,11 @@
                                 <th>Reference ID</th>
                                 <th>Status</th>
                                 <th>Date</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="payments-table">
                             <tr>
-                                <td colspan="7" class="loading">
+                                <td colspan="6" class="loading">
                                     <i class="fas fa-spinner fa-spin"></i>
                                     <div>Loading payments...</div>
                                 </td>
@@ -581,10 +595,24 @@
     </div>
 
     <script>
-        // Initialize Supabase (read-only for data display)
+        // Initialize Supabase
         const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        
+        let supabase;
+        
+        // Initialize Supabase with error handling
+        function initializeSupabase() {
+            try {
+                supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                console.log('✅ Supabase initialized successfully');
+                return true;
+            } catch (error) {
+                console.error('❌ Supabase initialization failed:', error);
+                showAlert('Database connection failed', 'error');
+                return false;
+            }
+        }
 
         // Check if user is logged in
         if (localStorage.getItem('adminLoggedIn') !== 'true') {
@@ -593,8 +621,11 @@
 
         // Load data when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            loadDashboardStats();
-            setupTabNavigation();
+            console.log('🔄 Page loaded, initializing...');
+            if (initializeSupabase()) {
+                loadDashboardStats();
+                setupTabNavigation();
+            }
         });
 
         function setupTabNavigation() {
@@ -642,29 +673,46 @@
 
         async function loadDashboardStats() {
             try {
+                console.log('📊 Loading dashboard stats...');
                 showLoading('recent-users');
                 
+                // Test connection first
+                const { data: testData, error: testError } = await supabase
+                    .from('users')
+                    .select('count')
+                    .limit(1);
+
+                if (testError) {
+                    throw new Error(`Database connection failed: ${testError.message}`);
+                }
+
                 // Total users
                 const { count: usersCount, error: usersError } = await supabase
                     .from('users')
                     .select('*', { count: 'exact', head: true });
 
+                if (usersError) throw usersError;
                 document.getElementById('total-users').textContent = usersCount || 0;
+                console.log(`👥 Total users: ${usersCount}`);
 
                 // Total campaigns
                 const { count: campaignsCount, error: campaignsError } = await supabase
                     .from('campaigns')
                     .select('*', { count: 'exact', head: true });
 
+                if (campaignsError) throw campaignsError;
                 document.getElementById('total-campaigns').textContent = campaignsCount || 0;
+                console.log(`🎬 Total campaigns: ${campaignsCount}`);
 
                 // Total coins in system
                 const { data: users, error: coinsError } = await supabase
                     .from('users')
                     .select('coins');
                 
+                if (coinsError) throw coinsError;
                 const totalCoins = users ? users.reduce((sum, user) => sum + (user.coins || 0), 0) : 0;
                 document.getElementById('total-coins').textContent = totalCoins;
+                console.log(`💰 Total coins: ${totalCoins}`);
 
                 // Pending payments
                 const { count: pendingPayments, error: paymentsError } = await supabase
@@ -672,7 +720,9 @@
                     .select('*', { count: 'exact', head: true })
                     .eq('status', 'pending');
 
+                if (paymentsError) throw paymentsError;
                 document.getElementById('pending-payments').textContent = pendingPayments || 0;
+                console.log(`💳 Pending payments: ${pendingPayments}`);
 
                 // Recent users
                 const { data: recentUsers, error: recentError } = await supabase
@@ -681,11 +731,13 @@
                     .order('created_at', { ascending: false })
                     .limit(5);
 
+                if (recentError) throw recentError;
                 displayRecentUsers(recentUsers);
+                console.log(`📋 Recent users loaded: ${recentUsers ? recentUsers.length : 0}`);
 
             } catch (error) {
-                console.error('Error loading dashboard stats:', error);
-                showError('recent-users', 'Failed to load data');
+                console.error('❌ Error loading dashboard stats:', error);
+                showError('recent-users', `Failed to load data: ${error.message}`);
             }
         }
 
@@ -695,9 +747,10 @@
             if (!users || users.length === 0) {
                 container.innerHTML = `
                     <tr>
-                        <td colspan="4" class="empty-state">
+                        <td colspan="5" class="empty-state">
                             <i class="fas fa-users"></i>
-                            <div>No users found</div>
+                            <div>No users found in database</div>
+                            <small>Make sure you have users in your Supabase database</small>
                         </td>
                     </tr>
                 `;
@@ -706,16 +759,18 @@
 
             container.innerHTML = users.map(user => `
                 <tr>
-                    <td>${user.name || 'N/A'}</td>
-                    <td>${user.email}</td>
-                    <td>${user.coins || 0}</td>
-                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                    <td><strong>${user.name || 'No Name'}</strong></td>
+                    <td>${user.email || 'No Email'}</td>
+                    <td><span class="status-badge status-active">${user.coins || 0} coins</span></td>
+                    <td>${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}</td>
+                    <td><span class="status-badge status-active">Active</span></td>
                 </tr>
             `).join('');
         }
 
         async function loadUsers() {
             try {
+                console.log('👥 Loading all users...');
                 showLoading('users-table');
                 const searchTerm = document.getElementById('user-search').value;
                 
@@ -730,35 +785,21 @@
 
                 const { data: users, error } = await query;
 
-                if (error) throw error;
+                if (error) {
+                    console.error('❌ Users query error:', error);
+                    throw error;
+                }
 
-                // Get additional stats for each user
-                const usersWithStats = await Promise.all(
-                    users.map(async (user) => {
-                        const [{ count: campaignsCount }, { count: referralsCount }] = await Promise.all([
-                            supabase
-                                .from('campaigns')
-                                .select('*', { count: 'exact', head: true })
-                                .eq('user_id', user.id),
-                            supabase
-                                .from('referrals')
-                                .select('*', { count: 'exact', head: true })
-                                .eq('inviter_id', user.id)
-                        ]);
-
-                        return {
-                            ...user,
-                            campaigns_count: campaignsCount || 0,
-                            referrals_count: referralsCount || 0
-                        };
-                    })
-                );
-
-                displayUsers(usersWithStats);
+                console.log(`✅ Users loaded successfully: ${users ? users.length : 0} users found`);
+                
+                // Store users for debug info
+                window.lastUsersData = users;
+                
+                displayUsers(users);
 
             } catch (error) {
-                console.error('Error loading users:', error);
-                showError('users-table', 'Failed to load users');
+                console.error('❌ Error loading users:', error);
+                showError('users-table', `Failed to load users: ${error.message}`);
             }
         }
 
@@ -770,7 +811,8 @@
                     <tr>
                         <td colspan="7" class="empty-state">
                             <i class="fas fa-users"></i>
-                            <div>No users found</div>
+                            <div>No users found in database</div>
+                            <small>The database query returned empty results</small>
                         </td>
                     </tr>
                 `;
@@ -779,23 +821,22 @@
 
             container.innerHTML = users.map(user => `
                 <tr>
-                    <td>${user.name || 'N/A'}</td>
-                    <td>${user.email}</td>
-                    <td>${user.coins || 0}</td>
-                    <td>${user.campaigns_count}</td>
-                    <td>${user.referrals_count}</td>
-                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
-                    <td>
-                        <span class="status-badge status-active">
-                            Active
-                        </span>
-                    </td>
+                    <td><small>${user.id ? user.id.substring(0, 8) + '...' : 'N/A'}</small></td>
+                    <td><strong>${user.name || 'No Name'}</strong></td>
+                    <td>${user.email || 'No Email'}</td>
+                    <td><span class="status-badge ${user.coins > 0 ? 'status-active' : 'status-pending'}">${user.coins || 0} coins</span></td>
+                    <td><code>${user.referral_code || 'No Code'}</code></td>
+                    <td>${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}</td>
+                    <td><span class="status-badge status-active">Active</span></td>
                 </tr>
             `).join('');
+            
+            console.log(`📊 Displayed ${users.length} users in table`);
         }
 
         async function loadCampaigns() {
             try {
+                console.log('🎬 Loading campaigns...');
                 showLoading('campaigns-table');
                 const statusFilter = document.getElementById('campaign-status-filter').value;
                 
@@ -813,10 +854,11 @@
                 if (error) throw error;
 
                 displayCampaigns(campaigns);
+                console.log(`✅ Campaigns loaded: ${campaigns ? campaigns.length : 0}`);
 
             } catch (error) {
-                console.error('Error loading campaigns:', error);
-                showError('campaigns-table', 'Failed to load campaigns');
+                console.error('❌ Error loading campaigns:', error);
+                showError('campaigns-table', `Failed to load campaigns: ${error.message}`);
             }
         }
 
@@ -837,22 +879,23 @@
 
             container.innerHTML = campaigns.map(campaign => `
                 <tr>
-                    <td>${campaign.video_title}</td>
-                    <td>${campaign.users?.name || 'N/A'} (${campaign.users?.email || 'N/A'})</td>
-                    <td>${campaign.current_intervals_completed}/${campaign.total_intervals}</td>
+                    <td>${campaign.video_title || 'Untitled Campaign'}</td>
+                    <td>${campaign.users?.name || 'Unknown'} (${campaign.users?.email || 'No email'})</td>
+                    <td>${campaign.current_intervals_completed || 0}/${campaign.total_intervals || 0}</td>
                     <td>${campaign.total_coins_spent || 0}</td>
                     <td>
-                        <span class="status-badge status-${campaign.status}">
-                            ${campaign.status}
+                        <span class="status-badge status-${campaign.status || 'active'}">
+                            ${campaign.status || 'active'}
                         </span>
                     </td>
-                    <td>${new Date(campaign.created_at).toLocaleDateString()}</td>
+                    <td>${campaign.created_at ? new Date(campaign.created_at).toLocaleDateString() : 'Unknown'}</td>
                 </tr>
             `).join('');
         }
 
         async function loadPayments() {
             try {
+                console.log('💳 Loading payments...');
                 showLoading('payments-table');
                 const statusFilter = document.getElementById('payment-status-filter').value;
                 
@@ -870,10 +913,11 @@
                 if (error) throw error;
 
                 displayPayments(payments);
+                console.log(`✅ Payments loaded: ${payments ? payments.length : 0}`);
 
             } catch (error) {
-                console.error('Error loading payments:', error);
-                showError('payments-table', 'Failed to load payments');
+                console.error('❌ Error loading payments:', error);
+                showError('payments-table', `Failed to load payments: ${error.message}`);
             }
         }
 
@@ -883,7 +927,7 @@
             if (!payments || payments.length === 0) {
                 container.innerHTML = `
                     <tr>
-                        <td colspan="7" class="empty-state">
+                        <td colspan="6" class="empty-state">
                             <i class="fas fa-receipt"></i>
                             <div>No payments found</div>
                         </td>
@@ -894,26 +938,16 @@
 
             container.innerHTML = payments.map(payment => `
                 <tr>
-                    <td>${payment.users?.name || 'N/A'} (${payment.users?.email || 'N/A'})</td>
-                    <td>₹${payment.amount}</td>
+                    <td>${payment.users?.name || 'Unknown'} (${payment.users?.email || 'No email'})</td>
+                    <td>₹${payment.amount || 0}</td>
                     <td>${payment.coins_credited || 'Pending'}</td>
-                    <td>${payment.reference_id}</td>
+                    <td><code>${payment.reference_id || 'No ID'}</code></td>
                     <td>
-                        <span class="status-badge status-${payment.status}">
-                            ${payment.status}
+                        <span class="status-badge status-${payment.status || 'pending'}">
+                            ${payment.status || 'pending'}
                         </span>
                     </td>
-                    <td>${new Date(payment.timestamp).toLocaleDateString()}</td>
-                    <td>
-                        ${payment.status === 'pending' ? `
-                            <button class="btn btn-success btn-sm" onclick="showAlert('Payment approval would require database write access', 'success')">
-                                Approve
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="showAlert('Payment rejection would require database write access', 'error')">
-                                Reject
-                            </button>
-                        ` : 'No actions'}
-                    </td>
+                    <td>${payment.timestamp ? new Date(payment.timestamp).toLocaleDateString() : 'Unknown'}</td>
                 </tr>
             `).join('');
         }
@@ -924,7 +958,7 @@
                 <tr>
                     <td colspan="10" class="loading">
                         <i class="fas fa-spinner fa-spin"></i>
-                        <div>Loading data...</div>
+                        <div>Loading data from database...</div>
                     </td>
                 </tr>
             `;
@@ -937,6 +971,7 @@
                     <td colspan="10" class="empty-state">
                         <i class="fas fa-exclamation-triangle"></i>
                         <div>${message}</div>
+                        <small>Check browser console for details</small>
                     </td>
                 </tr>
             `;
@@ -953,10 +988,33 @@
             }, 5000);
         }
 
+        function showDebugInfo() {
+            const debugDiv = document.getElementById('debug-info');
+            if (debugDiv.style.display === 'none') {
+                debugDiv.innerHTML = `
+                    <strong>Debug Information:</strong><br>
+                    - Supabase URL: ${supabaseUrl}<br>
+                    - Last Users Count: ${window.lastUsersData ? window.lastUsersData.length : 0}<br>
+                    - Local Storage: ${localStorage.getItem('adminLoggedIn') ? 'Logged In' : 'Not Logged In'}<br>
+                    - Page Loaded: ${new Date().toLocaleString()}
+                `;
+                debugDiv.style.display = 'block';
+            } else {
+                debugDiv.style.display = 'none';
+            }
+        }
+
         function logout() {
             localStorage.removeItem('adminLoggedIn');
             localStorage.removeItem('adminLoginTime');
             window.location.href = 'admin-login-simple.html';
+        }
+
+        // Manual data reload function
+        window.manualReload = function() {
+            console.log('🔄 Manual reload triggered');
+            loadDashboardStats();
+            loadUsers();
         }
     </script>
 </body>
