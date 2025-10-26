@@ -8,7 +8,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Keep your existing CSS styles, they are fine */
         :root {
             --white: #ffffff;
             --green: #10B981;
@@ -321,6 +320,12 @@
             font-size: 0.9rem;
         }
 
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+        }
+
         @media (max-width: 768px) {
             .admin-header {
                 flex-direction: column;
@@ -358,6 +363,7 @@
             </div>
 
             <div class="user-info">
+                <span id="admin-email" style="color: var(--gray); font-size: 0.9rem;"></span>
                 <button class="logout-btn" onclick="logout()">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
@@ -367,6 +373,12 @@
 
     <div class="admin-content container">
         <div id="alert" class="alert"></div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="loading">
+            <i class="fas fa-spinner fa-spin fa-2x"></i>
+            <p>Loading Admin Panel...</p>
+        </div>
 
         <!-- Dashboard Tab -->
         <div class="tab-content active" id="dashboard-tab">
@@ -579,41 +591,43 @@
         let currentUser = null;
 
         // Check authentication and admin status
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (!session) {
-                console.log('No session found, redirecting to admin login');
-                window.location.href = 'admin-login.html';
-            } else {
-                currentUser = session.user;
-                console.log('User session found:', currentUser.id);
-                checkAdminStatus();
-            }
-        });
-
-        async function checkAdminStatus() {
+        async function initializeAdmin() {
             try {
-                console.log('Checking admin status for user:', currentUser.id);
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
                 
-                const { data: userData, error } = await supabase
-                    .from('users')
-                    .select('is_admin')
-                    .eq('id', currentUser.id)
-                    .single();
-
-                if (error) {
-                    console.error('Error fetching user data:', error);
-                    throw error;
+                if (sessionError) {
+                    throw new Error('Session error: ' + sessionError.message);
                 }
 
-                console.log('User data:', userData);
-
-                if (!userData || !userData.is_admin) {
-                    console.log('User is not admin, redirecting to dashboard');
-                    window.location.href = 'dashboard.html';
+                if (!session) {
+                    window.location.href = 'admin-login.html';
                     return;
                 }
 
-                console.log('User is admin, loading dashboard');
+                currentUser = session.user;
+                
+                // Check if user is admin
+                const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .select('is_admin, email')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                if (userError) {
+                    throw new Error('Failed to fetch user data: ' + userError.message);
+                }
+
+                if (!userData || !userData.is_admin) {
+                    showAlert('Access denied. Admin privileges required.', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                    return;
+                }
+
+                // User is admin, proceed
+                document.getElementById('admin-email').textContent = userData.email;
+                document.getElementById('loading-state').style.display = 'none';
                 
                 // Load initial data
                 loadDashboardStats();
@@ -621,8 +635,8 @@
                 setupTabNavigation();
 
             } catch (error) {
-                console.error('Error checking admin status:', error);
-                showAlert('Error verifying admin access. Please try again.', 'error');
+                console.error('Admin initialization error:', error);
+                showAlert(error.message || 'Failed to initialize admin panel', 'error');
                 setTimeout(() => {
                     window.location.href = 'admin-login.html';
                 }, 3000);
@@ -675,8 +689,6 @@
 
         async function loadDashboardStats() {
             try {
-                console.log('Loading dashboard stats...');
-                
                 // Total users
                 const { count: usersCount, error: usersError } = await supabase
                     .from('users')
@@ -717,14 +729,11 @@
 
             } catch (error) {
                 console.error('Error loading dashboard stats:', error);
-                showAlert('Error loading dashboard statistics', 'error');
             }
         }
 
         async function loadRecentActivity() {
             try {
-                console.log('Loading recent activity...');
-                
                 // Get recent payments, campaigns, and watch logs
                 const [{ data: payments }, { data: campaigns }, { data: watchLogs }] = await Promise.all([
                     supabase
@@ -811,7 +820,14 @@
 
             } catch (error) {
                 console.error('Error loading recent activity:', error);
-                showAlert('Error loading recent activity', 'error');
+                document.getElementById('recent-activity').innerHTML = `
+                    <tr>
+                        <td colspan="4" class="empty-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div>Error loading activity</div>
+                        </td>
+                    </tr>
+                `;
             }
         }
 
@@ -830,11 +846,9 @@
 
                 const { data: payments, error } = await query;
 
-                if (error) throw error;
-
                 const container = document.getElementById('payments-table');
                 
-                if (!payments || payments.length === 0) {
+                if (error || !payments || payments.length === 0) {
                     container.innerHTML = `
                         <tr>
                             <td colspan="7" class="empty-state">
@@ -873,14 +887,19 @@
 
             } catch (error) {
                 console.error('Error loading payments:', error);
-                showAlert('Error loading payments', 'error');
+                document.getElementById('payments-table').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div>Error loading payments</div>
+                        </td>
+                    </tr>
+                `;
             }
         }
 
         async function approvePayment(paymentId) {
             try {
-                console.log('Approving payment:', paymentId);
-                
                 // Update payment status
                 const { error: paymentError } = await supabase
                     .from('payments')
@@ -924,7 +943,7 @@
 
             } catch (error) {
                 console.error('Error approving payment:', error);
-                showAlert('Error approving payment', 'error');
+                showAlert('Error approving payment: ' + error.message, 'error');
             }
         }
 
@@ -963,7 +982,7 @@
 
             } catch (error) {
                 console.error('Error rejecting payment:', error);
-                showAlert('Error rejecting payment', 'error');
+                showAlert('Error rejecting payment: ' + error.message, 'error');
             }
         }
 
@@ -982,11 +1001,9 @@
 
                 const { data: campaigns, error } = await query;
 
-                if (error) throw error;
-
                 const container = document.getElementById('campaigns-table');
                 
-                if (!campaigns || campaigns.length === 0) {
+                if (error || !campaigns || campaigns.length === 0) {
                     container.innerHTML = `
                         <tr>
                             <td colspan="7" class="empty-state">
@@ -1023,7 +1040,14 @@
 
             } catch (error) {
                 console.error('Error loading campaigns:', error);
-                showAlert('Error loading campaigns', 'error');
+                document.getElementById('campaigns-table').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div>Error loading campaigns</div>
+                        </td>
+                    </tr>
+                `;
             }
         }
 
@@ -1103,7 +1127,14 @@
 
             } catch (error) {
                 console.error('Error loading users:', error);
-                showAlert('Error loading users', 'error');
+                document.getElementById('users-table').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div>Error loading users</div>
+                        </td>
+                    </tr>
+                `;
             }
         }
 
@@ -1146,6 +1177,11 @@
                 alert(`Delete user ${userId} - Feature coming soon!`);
             }
         }
+
+        // Initialize admin panel when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAdmin();
+        });
     </script>
 </body>
 </html>
