@@ -157,6 +157,29 @@
             color: #991B1B;
             border: 1px solid #FECACA;
         }
+
+        .config-help {
+            background-color: #FFFBEB;
+            border: 1px solid #FEF3C7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .config-help h4 {
+            color: #92400E;
+            margin-bottom: 10px;
+        }
+
+        .config-help ol {
+            padding-left: 20px;
+            color: #92400E;
+        }
+
+        .config-help li {
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -174,12 +197,12 @@
         <form id="adminLoginForm">
             <div class="form-group">
                 <label for="email">Admin Email</label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" name="email" value="sonarratilal@gmail.com" required>
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" value="Ra7359@@" required>
             </div>
 
             <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -187,25 +210,57 @@
             </button>
         </form>
 
+        <div class="config-help">
+            <h4>API Key Configuration Help:</h4>
+            <ol>
+                <li>Go to Supabase → Settings → API</li>
+                <li>Copy "Project URL" and "anon public" key</li>
+                <li>Update the JavaScript code with these values</li>
+                <li>Make sure CORS is configured for your domain</li>
+            </ol>
+        </div>
+
         <div class="user-login">
             <a href="login.html">← Back to User Login</a>
         </div>
     </div>
 
     <script>
-        // Initialize Supabase
-        const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iywicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        // Initialize Supabase with error handling
+        function initializeSupabase() {
+            try {
+                // Replace these with your actual Supabase credentials
+                const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
+                
+                if (!supabaseUrl || !supabaseKey) {
+                    throw new Error('Supabase configuration missing');
+                }
+
+                const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                console.log('Supabase initialized successfully');
+                return supabase;
+            } catch (error) {
+                console.error('Supabase initialization error:', error);
+                showAlert('Configuration error: ' + error.message, 'error');
+                return null;
+            }
+        }
+
+        const supabase = initializeSupabase();
 
         // Check if user is already logged in and is admin
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-                checkAdminStatus(session.user);
-            }
-        });
+        if (supabase) {
+            supabase.auth.getSession().then(({ data: { session } }) => {
+                if (session) {
+                    checkAdminStatus(session.user);
+                }
+            });
+        }
 
         async function checkAdminStatus(user) {
+            if (!supabase) return;
+            
             try {
                 const { data: userData, error } = await supabase
                     .from('users')
@@ -224,6 +279,11 @@
         document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            if (!supabase) {
+                showAlert('Supabase not configured properly. Please check API keys.', 'error');
+                return;
+            }
+
             const submitBtn = document.getElementById('submitBtn');
             const alert = document.getElementById('alert');
             
@@ -236,6 +296,16 @@
             submitBtn.textContent = 'Signing In...';
             
             try {
+                // Test Supabase connection first
+                const { data: testData, error: testError } = await supabase
+                    .from('users')
+                    .select('count')
+                    .limit(1);
+
+                if (testError) {
+                    throw new Error('API Connection failed: ' + testError.message);
+                }
+
                 // Sign in user with Supabase Auth
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
@@ -271,6 +341,10 @@
                     errorMessage = 'Invalid email or password. Please try again.';
                 } else if (error.message.includes('Access denied')) {
                     errorMessage = 'Access denied. Admin privileges required.';
+                } else if (error.message.includes('API Connection failed')) {
+                    errorMessage = 'Server connection failed. Please check your API keys and internet connection.';
+                } else if (error.message.includes('JWT')) {
+                    errorMessage = 'Invalid API configuration. Please check Supabase settings.';
                 }
                 
                 showAlert(errorMessage, 'error');
