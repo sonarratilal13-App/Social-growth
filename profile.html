@@ -635,7 +635,7 @@
                 return;
             }
             
-            const referralLink = `${window.location.origin}/signup-fixed.html?ref=${referralCode}`;
+            const referralLink = `${window.location.origin}/signup.html?ref=${referralCode}`;
             
             navigator.clipboard.writeText(referralLink)
                 .then(() => {
@@ -654,7 +654,7 @@
                 return;
             }
 
-            const referralLink = `${window.location.origin}/signup-fixed.html?ref=${referralCode}`;
+            const referralLink = `${window.location.origin}/signup.html?ref=${referralCode}`;
             
             if (navigator.share) {
                 navigator.share({
