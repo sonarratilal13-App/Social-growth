@@ -79,26 +79,6 @@
             color: var(--white);
         }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logout-btn {
-            background: none;
-            border: none;
-            color: var(--gray);
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        .logout-btn:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
         .admin-content {
             margin-top: 30px;
         }
@@ -326,6 +306,16 @@
             color: var(--gray);
         }
 
+        .admin-notice {
+            background-color: #FFFBEB;
+            border: 1px solid #FEF3C7;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #92400E;
+            font-size: 0.9rem;
+        }
+
         @media (max-width: 768px) {
             .admin-header {
                 flex-direction: column;
@@ -352,7 +342,7 @@
         <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
             <div class="logo">
                 <span class="logo-icon">🚀</span>
-                Social Growth - Admin
+                Social Growth - Admin (Open System)
             </div>
             
             <div class="admin-nav">
@@ -361,24 +351,15 @@
                 <div class="nav-tab" data-tab="campaigns">Campaigns</div>
                 <div class="nav-tab" data-tab="users">Users</div>
             </div>
-
-            <div class="user-info">
-                <span id="admin-email" style="color: var(--gray); font-size: 0.9rem;"></span>
-                <button class="logout-btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-            </div>
         </div>
     </div>
 
     <div class="admin-content container">
-        <div id="alert" class="alert"></div>
-
-        <!-- Loading State -->
-        <div id="loading-state" class="loading">
-            <i class="fas fa-spinner fa-spin fa-2x"></i>
-            <p>Loading Admin Panel...</p>
+        <div class="admin-notice">
+            <i class="fas fa-info-circle"></i> Open Admin System - No Login Required
         </div>
+
+        <div id="alert" class="alert"></div>
 
         <!-- Dashboard Tab -->
         <div class="tab-content active" id="dashboard-tab">
@@ -583,64 +564,21 @@
     </div>
 
     <script>
-        // Initialize Supabase
+        // Initialize Supabase (No authentication needed)
         const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        let currentUser = null;
+        // Initialize the admin panel immediately (no login check)
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAdminPanel();
+        });
 
-        // Check authentication and admin status
-        async function initializeAdmin() {
-            try {
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-                
-                if (sessionError) {
-                    throw new Error('Session error: ' + sessionError.message);
-                }
-
-                if (!session) {
-                    window.location.href = 'admin-login.html';
-                    return;
-                }
-
-                currentUser = session.user;
-                
-                // Check if user is admin
-                const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .select('is_admin, email')
-                    .eq('id', currentUser.id)
-                    .single();
-
-                if (userError) {
-                    throw new Error('Failed to fetch user data: ' + userError.message);
-                }
-
-                if (!userData || !userData.is_admin) {
-                    showAlert('Access denied. Admin privileges required.', 'error');
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 2000);
-                    return;
-                }
-
-                // User is admin, proceed
-                document.getElementById('admin-email').textContent = userData.email;
-                document.getElementById('loading-state').style.display = 'none';
-                
-                // Load initial data
-                loadDashboardStats();
-                loadRecentActivity();
-                setupTabNavigation();
-
-            } catch (error) {
-                console.error('Admin initialization error:', error);
-                showAlert(error.message || 'Failed to initialize admin panel', 'error');
-                setTimeout(() => {
-                    window.location.href = 'admin-login.html';
-                }, 3000);
-            }
+        function initializeAdminPanel() {
+            console.log('Initializing Open Admin Panel...');
+            loadDashboardStats();
+            loadRecentActivity();
+            setupTabNavigation();
         }
 
         function setupTabNavigation() {
@@ -729,6 +667,7 @@
 
             } catch (error) {
                 console.error('Error loading dashboard stats:', error);
+                showAlert('Error loading dashboard data: ' + error.message, 'error');
             }
         }
 
@@ -1149,11 +1088,6 @@
             }, 5000);
         }
 
-        async function logout() {
-            await supabase.auth.signOut();
-            window.location.href = 'index.html';
-        }
-
         // Placeholder functions for other actions
         function pauseCampaign(campaignId) {
             alert(`Pause campaign ${campaignId} - Feature coming soon!`);
@@ -1177,11 +1111,6 @@
                 alert(`Delete user ${userId} - Feature coming soon!`);
             }
         }
-
-        // Initialize admin panel when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeAdmin();
-        });
     </script>
 </body>
 </html>
