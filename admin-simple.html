@@ -237,6 +237,15 @@
             background-color: #D97706;
         }
 
+        .btn-info {
+            background-color: #3B82F6;
+            color: var(--white);
+        }
+
+        .btn-info:hover {
+            background-color: #2563EB;
+        }
+
         .status-badge {
             padding: 4px 8px;
             border-radius: 12px;
@@ -286,6 +295,12 @@
             background-color: #FEE2E2;
             color: #991B1B;
             border: 1px solid #FECACA;
+        }
+
+        .alert-info {
+            background-color: #DBEAFE;
+            color: #1E40AF;
+            border: 1px solid #BFDBFE;
         }
 
         .empty-state {
@@ -338,6 +353,15 @@
             margin: 10px 0;
             font-family: monospace;
             font-size: 12px;
+            border-left: 4px solid var(--green);
+        }
+
+        .test-data-section {
+            background: #F0FDF4;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px dashed var(--green);
         }
 
         @media (max-width: 768px) {
@@ -387,6 +411,21 @@
 
     <div class="admin-content container">
         <div id="alert" class="alert"></div>
+
+        <!-- Test Data Section -->
+        <div class="test-data-section">
+            <h3><i class="fas fa-vial"></i> Test Data Management</h3>
+            <p>No users found in database. Create sample test data to see the admin panel in action.</p>
+            <button class="btn btn-info" onclick="createTestData()">
+                <i class="fas fa-plus"></i> Create Test Data
+            </button>
+            <button class="btn btn-warning" onclick="clearAllData()">
+                <i class="fas fa-trash"></i> Clear All Data
+            </button>
+            <button class="btn btn-success" onclick="loadAllData()">
+                <i class="fas fa-refresh"></i> Refresh Data
+            </button>
+        </div>
 
         <!-- Dashboard Tab -->
         <div class="tab-content active" id="dashboard-tab">
@@ -671,6 +710,184 @@
             document.getElementById('user-search').addEventListener('input', loadUsers);
         }
 
+        // Create Test Data Function
+        async function createTestData() {
+            showAlert('Creating test data...', 'info');
+            
+            try {
+                // Create test users
+                const testUsers = [
+                    {
+                        id: 'user-' + Date.now() + '-1',
+                        email: 'john.doe@example.com',
+                        name: 'John Doe',
+                        coins: 150,
+                        referral_code: 'JOHN123',
+                        created_at: new Date().toISOString()
+                    },
+                    {
+                        id: 'user-' + Date.now() + '-2',
+                        email: 'jane.smith@example.com',
+                        name: 'Jane Smith',
+                        coins: 75,
+                        referral_code: 'JANE456',
+                        created_at: new Date().toISOString()
+                    },
+                    {
+                        id: 'user-' + Date.now() + '-3',
+                        email: 'mike.wilson@example.com',
+                        name: 'Mike Wilson',
+                        coins: 300,
+                        referral_code: 'MIKE789',
+                        created_at: new Date().toISOString()
+                    },
+                    {
+                        id: 'user-' + Date.now() + '-4',
+                        email: 'sarah.johnson@example.com',
+                        name: 'Sarah Johnson',
+                        coins: 50,
+                        referral_code: 'SARAH101',
+                        created_at: new Date().toISOString()
+                    },
+                    {
+                        id: 'user-' + Date.now() + '-5',
+                        email: 'alex.brown@example.com',
+                        name: 'Alex Brown',
+                        coins: 200,
+                        referral_code: 'ALEX202',
+                        created_at: new Date().toISOString()
+                    }
+                ];
+
+                // Insert test users
+                const { error: usersError } = await supabase
+                    .from('users')
+                    .insert(testUsers);
+
+                if (usersError) {
+                    console.log('Users might already exist, continuing...');
+                }
+
+                // Create test campaigns
+                const testCampaigns = [
+                    {
+                        id: 'campaign-' + Date.now() + '-1',
+                        user_id: testUsers[0].id,
+                        video_title: 'My Awesome Vlog',
+                        video_url: 'https://youtube.com/watch?v=abc123',
+                        video_length_sec: 300,
+                        campaign_length_sec: 600,
+                        coins_per_30s: 3,
+                        total_intervals: 20,
+                        current_intervals_completed: 8,
+                        status: 'active',
+                        total_coins_spent: 60,
+                        created_at: new Date().toISOString()
+                    },
+                    {
+                        id: 'campaign-' + Date.now() + '-2',
+                        user_id: testUsers[1].id,
+                        video_title: 'Cooking Tutorial',
+                        video_url: 'https://youtube.com/watch?v=def456',
+                        video_length_sec: 450,
+                        campaign_length_sec: 900,
+                        coins_per_30s: 3,
+                        total_intervals: 30,
+                        current_intervals_completed: 15,
+                        status: 'active',
+                        total_coins_spent: 90,
+                        created_at: new Date().toISOString()
+                    }
+                ];
+
+                // Insert test campaigns
+                const { error: campaignsError } = await supabase
+                    .from('campaigns')
+                    .insert(testCampaigns);
+
+                if (campaignsError) {
+                    console.log('Campaigns might already exist, continuing...');
+                }
+
+                // Create test payments
+                const testPayments = [
+                    {
+                        id: 'payment-' + Date.now() + '-1',
+                        user_id: testUsers[0].id,
+                        amount: 100,
+                        coins_credited: 1000,
+                        reference_id: 'PAY123456',
+                        status: 'approved',
+                        timestamp: new Date().toISOString()
+                    },
+                    {
+                        id: 'payment-' + Date.now() + '-2',
+                        user_id: testUsers[2].id,
+                        amount: 500,
+                        coins_credited: 5000,
+                        reference_id: 'PAY789012',
+                        status: 'pending',
+                        timestamp: new Date().toISOString()
+                    }
+                ];
+
+                // Insert test payments
+                const { error: paymentsError } = await supabase
+                    .from('payments')
+                    .insert(testPayments);
+
+                if (paymentsError) {
+                    console.log('Payments might already exist, continuing...');
+                }
+
+                showAlert('✅ Test data created successfully! Refreshing...', 'success');
+                
+                // Reload all data after 2 seconds
+                setTimeout(() => {
+                    loadAllData();
+                }, 2000);
+
+            } catch (error) {
+                console.error('❌ Error creating test data:', error);
+                showAlert('Error creating test data: ' + error.message, 'error');
+            }
+        }
+
+        // Clear all data
+        async function clearAllData() {
+            if (!confirm('Are you sure you want to delete ALL data? This cannot be undone!')) {
+                return;
+            }
+
+            showAlert('Clearing all data...', 'info');
+            
+            try {
+                // Delete payments first (due to foreign key constraints)
+                await supabase.from('payments').delete().neq('id', '');
+                await supabase.from('campaigns').delete().neq('id', '');
+                await supabase.from('users').delete().neq('id', '');
+                
+                showAlert('✅ All data cleared successfully!', 'success');
+                
+                // Reload data
+                setTimeout(() => {
+                    loadAllData();
+                }, 1000);
+
+            } catch (error) {
+                console.error('❌ Error clearing data:', error);
+                showAlert('Error clearing data: ' + error.message, 'error');
+            }
+        }
+
+        // Load all data
+        function loadAllData() {
+            loadDashboardStats();
+            loadUsers();
+            loadCampaigns();
+            loadPayments();
+        }
+
         async function loadDashboardStats() {
             try {
                 console.log('📊 Loading dashboard stats...');
@@ -750,7 +967,7 @@
                         <td colspan="5" class="empty-state">
                             <i class="fas fa-users"></i>
                             <div>No users found in database</div>
-                            <small>Make sure you have users in your Supabase database</small>
+                            <small>Click "Create Test Data" to add sample users</small>
                         </td>
                     </tr>
                 `;
@@ -812,7 +1029,7 @@
                         <td colspan="7" class="empty-state">
                             <i class="fas fa-users"></i>
                             <div>No users found in database</div>
-                            <small>The database query returned empty results</small>
+                            <small>Click "Create Test Data" to add sample users</small>
                         </td>
                     </tr>
                 `;
@@ -871,6 +1088,7 @@
                         <td colspan="6" class="empty-state">
                             <i class="fas fa-video"></i>
                             <div>No campaigns found</div>
+                            <small>Click "Create Test Data" to add sample campaigns</small>
                         </td>
                     </tr>
                 `;
@@ -930,6 +1148,7 @@
                         <td colspan="6" class="empty-state">
                             <i class="fas fa-receipt"></i>
                             <div>No payments found</div>
+                            <small>Click "Create Test Data" to add sample payments</small>
                         </td>
                     </tr>
                 `;
@@ -996,7 +1215,8 @@
                     - Supabase URL: ${supabaseUrl}<br>
                     - Last Users Count: ${window.lastUsersData ? window.lastUsersData.length : 0}<br>
                     - Local Storage: ${localStorage.getItem('adminLoggedIn') ? 'Logged In' : 'Not Logged In'}<br>
-                    - Page Loaded: ${new Date().toLocaleString()}
+                    - Page Loaded: ${new Date().toLocaleString()}<br>
+                    - Database Status: ${window.lastUsersData ? 'Connected' : 'No Data'}
                 `;
                 debugDiv.style.display = 'block';
             } else {
@@ -1008,13 +1228,6 @@
             localStorage.removeItem('adminLoggedIn');
             localStorage.removeItem('adminLoginTime');
             window.location.href = 'admin-login-simple.html';
-        }
-
-        // Manual data reload function
-        window.manualReload = function() {
-            console.log('🔄 Manual reload triggered');
-            loadDashboardStats();
-            loadUsers();
         }
     </script>
 </body>
