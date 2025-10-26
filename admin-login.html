@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Social Growth</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --white: #ffffff;
@@ -123,22 +122,6 @@
             cursor: not-allowed;
         }
 
-        .user-login {
-            text-align: center;
-            margin-top: 25px;
-            color: var(--gray);
-        }
-
-        .user-login a {
-            color: var(--green);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .user-login a:hover {
-            text-decoration: underline;
-        }
-
         .alert {
             padding: 12px;
             border-radius: 8px;
@@ -187,205 +170,78 @@
         </div>
         
         <h1>Admin Login</h1>
-        <p class="subtitle">Access the admin dashboard</p>
+        <p class="subtitle">Simple username/password system</p>
 
         <div id="alert" class="alert"></div>
 
         <form id="adminLoginForm">
             <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" placeholder="Enter any email" required>
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" value="admin" required>
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter any password" required>
+                <input type="password" id="password" name="password" value="admin123" required>
             </div>
 
             <button type="submit" class="btn btn-primary" id="submitBtn">
-                Login as Admin
+                Login to Admin Panel
             </button>
         </form>
 
         <div class="demo-credentials">
-            <h3>Demo Login (Use Any Credentials)</h3>
-            <p><strong>Email:</strong> Any email address</p>
-            <p><strong>Password:</strong> Any password (6+ characters)</p>
-            <p><em>System will automatically create admin account</em></p>
-        </div>
-
-        <div class="user-login">
-            <a href="login.html">User Login</a>
+            <h3>Default Login Credentials</h3>
+            <p><strong>Username:</strong> admin</p>
+            <p><strong>Password:</strong> admin123</p>
         </div>
     </div>
 
     <script>
-        // Initialize Supabase
-        const supabaseUrl = 'https://qmahpzpedremaubkyiiv.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWhwenBlZHJlbWF1Ymt5aWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDUwODcsImV4cCI6MjA3NjkyMTA4N30.oABzTe_zGWpt2zCM9uBu5n_uRKpQTj1Jm84SGN_Z_pE';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        // Simple username/password authentication
+        const ADMIN_CREDENTIALS = {
+            username: 'admin',
+            password: 'admin123'
+        };
 
-        document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const submitBtn = document.getElementById('submitBtn');
             const alert = document.getElementById('alert');
             
             // Get form values
-            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             
             // Basic validation
-            if (!email || !password) {
-                showAlert('Please enter both email and password', 'error');
-                return;
-            }
-
-            if (password.length < 6) {
-                showAlert('Password must be at least 6 characters', 'error');
+            if (!username || !password) {
+                showAlert('Please enter both username and password', 'error');
                 return;
             }
             
             // Disable submit button
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Creating Admin Account...';
+            submitBtn.textContent = 'Logging In...';
             
-            try {
-                console.log('Starting admin account creation...');
+            // Simple authentication
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                showAlert('Login successful! Redirecting...', 'success');
                 
-                // Step 1: Sign up user with Supabase Auth
-                const { data: authData, error: authError } = await supabase.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        data: {
-                            name: 'Admin User',
-                            is_admin: true
-                        }
-                    }
-                });
-                
-                if (authError) {
-                    // If user already exists, try signing in
-                    if (authError.message.includes('already registered')) {
-                        console.log('User exists, trying sign in...');
-                        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                            email: email,
-                            password: password
-                        });
-                        
-                        if (signInError) {
-                            throw new Error('Invalid password for existing user');
-                        }
-                        
-                        // User signed in successfully, now check/update admin status
-                        await ensureAdminUser(signInData.user, email);
-                    } else {
-                        throw authError;
-                    }
-                } else if (authData.user) {
-                    console.log('New user created:', authData.user.id);
-                    // Create admin user in database
-                    await createAdminUser(authData.user, email);
-                }
-                
-                // Show success message
-                showAlert('Admin account created successfully! Redirecting...', 'success');
+                // Store login session
+                localStorage.setItem('adminLoggedIn', 'true');
+                localStorage.setItem('adminLoginTime', new Date().toISOString());
                 
                 // Redirect to admin dashboard
                 setTimeout(() => {
-                    window.location.href = 'admin.html';
-                }, 2000);
-                
-            } catch (error) {
-                console.error('Admin login error:', error);
-                let errorMessage = error.message || 'An error occurred';
-                
-                if (error.message.includes('Invalid login credentials')) {
-                    errorMessage = 'Invalid email or password. Please try again.';
-                } else if (error.message.includes('already registered')) {
-                    errorMessage = 'Email already registered. Please use a different email or try signing in.';
-                } else if (error.message.includes('Password should be at least')) {
-                    errorMessage = 'Password must be at least 6 characters long.';
-                }
-                
-                showAlert(errorMessage, 'error');
-            } finally {
+                    window.location.href = 'admin-simple.html';
+                }, 1000);
+            } else {
+                showAlert('Invalid username or password', 'error');
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Login as Admin';
+                submitBtn.textContent = 'Login to Admin Panel';
             }
         });
-
-        async function ensureAdminUser(authUser, email) {
-            try {
-                // Check if user exists in our database
-                const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .select('is_admin')
-                    .eq('id', authUser.id)
-                    .single();
-
-                if (userError || !userData) {
-                    // User doesn't exist in database, create admin user
-                    await createAdminUser(authUser, email);
-                } else if (!userData.is_admin) {
-                    // User exists but is not admin, update to admin
-                    await supabase
-                        .from('users')
-                        .update({ is_admin: true })
-                        .eq('id', authUser.id);
-                    console.log('User updated to admin');
-                }
-                
-            } catch (error) {
-                console.error('Error ensuring admin user:', error);
-                throw error;
-            }
-        }
-
-        async function createAdminUser(authUser, email) {
-            try {
-                console.log('Creating admin user profile...');
-                
-                const userReferralCode = 'ADMIN-' + Math.random().toString(36).substr(2, 8).toUpperCase();
-                
-                const { error } = await supabase
-                    .from('users')
-                    .insert([
-                        { 
-                            id: authUser.id,
-                            email: email,
-                            name: 'Admin User',
-                            referral_code: userReferralCode,
-                            coins: 1000,
-                            is_admin: true,
-                            created_at: new Date().toISOString()
-                        }
-                    ]);
-                    
-                if (error) {
-                    console.error('Admin profile creation error:', error);
-                    
-                    // If insert fails, try update
-                    const { error: updateError } = await supabase
-                        .from('users')
-                        .update({ 
-                            is_admin: true,
-                            name: 'Admin User'
-                        })
-                        .eq('id', authUser.id);
-                        
-                    if (updateError) {
-                        throw updateError;
-                    }
-                }
-                
-                console.log('Admin profile created/updated successfully');
-            } catch (error) {
-                console.error('Error creating admin profile:', error);
-                throw new Error('Failed to create admin profile. Please try again.');
-            }
-        }
         
         function showAlert(message, type) {
             const alert = document.getElementById('alert');
@@ -398,11 +254,10 @@
             }, 5000);
         }
 
-        // Auto-fill demo credentials for testing
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('email').value = 'admin@socialgrowth.com';
-            document.getElementById('password').value = 'admin123';
-        });
+        // Check if already logged in
+        if (localStorage.getItem('adminLoggedIn') === 'true') {
+            window.location.href = 'admin-simple.html';
+        }
     </script>
 </body>
 </html>
