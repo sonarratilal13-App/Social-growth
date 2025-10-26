@@ -731,7 +731,7 @@
             if (navigator.share) {
                 navigator.share({
                     title: 'Join Social Growth',
-                    text: 'Earn coins by watching YouTube videos! Use my referral code:',
+                    text: '📈 Boost Your YouTube Channel & Earn Rewards Simultaneously!\n\nSocial Growth is revolutionizing how creators and viewers interact:\n\n🎯 For Viewers:\n• Watch engaging YouTube videos\n• Earn coins for every completed view\n• Redeem rewards for cash & premium subscriptions\n• Discover new content creators\n\n🎯 For Creators:\n• Get genuine watch time & engagement\n• Grow your subscriber base organically\n• Increase your video visibility\n\nJoin using my referral code and let\'s grow together!',
                     url: referralLink
                 });
             } else {
@@ -748,7 +748,24 @@
             }
             
             const referralLink = `${window.location.origin}/signup.html?ref=${referralCode}`;
-            const message = `Join Social Growth and earn coins by watching YouTube videos! Use my referral code: ${referralCode}. Sign up here: ${referralLink}`;
+            const message = `📈 Boost Your YouTube Channel & Earn Rewards Simultaneously!
+
+Social Growth is revolutionizing how creators and viewers interact:
+
+🎯 For Viewers:
+• Watch engaging YouTube videos
+• Earn coins for every completed view
+• Redeem rewards for cash & premium subscriptions
+• Discover new content creators
+
+🎯 For Creators:
+• Get genuine watch time & engagement
+• Grow your subscriber base organically
+• Increase your video visibility
+
+Join using my referral code: ${referralCode} and let's grow together!
+Sign up here: ${referralLink}`;
+            
             const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
         }
@@ -761,7 +778,8 @@
             }
             
             const referralLink = `${window.location.origin}/signup.html?ref=${referralCode}`;
-            const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}&quote=${encodeURIComponent('Join Social Growth and earn coins by watching YouTube videos!')}`;
+            const message = `📈 Boost Your YouTube Channel & Earn Rewards Simultaneously! Join Social Growth using my referral code: ${referralCode}`;
+            const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}&quote=${encodeURIComponent(message)}`;
             window.open(url, '_blank', 'width=600,height=400');
         }
 
@@ -773,7 +791,7 @@
             }
             
             const referralLink = `${window.location.origin}/signup.html?ref=${referralCode}`;
-            const message = `Join Social Growth and earn coins by watching YouTube videos! Use my referral code: ${referralCode}`;
+            const message = `📈 Boost Your YouTube Channel & Earn Rewards Simultaneously! Join Social Growth using my referral code: ${referralCode}`;
             const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}&url=${encodeURIComponent(referralLink)}`;
             window.open(url, '_blank', 'width=600,height=400');
         }
@@ -786,7 +804,24 @@
             }
             
             const referralLink = `${window.location.origin}/signup.html?ref=${referralCode}`;
-            const message = `Join Social Growth and earn coins by watching YouTube videos! Use my referral code: ${referralCode}. Sign up here: ${referralLink}`;
+            const message = `📈 Boost Your YouTube Channel & Earn Rewards Simultaneously!
+
+Social Growth is revolutionizing how creators and viewers interact:
+
+🎯 For Viewers:
+• Watch engaging YouTube videos
+• Earn coins for every completed view
+• Redeem rewards for cash & premium subscriptions
+• Discover new content creators
+
+🎯 For Creators:
+• Get genuine watch time & engagement
+• Grow your subscriber base organically
+• Increase your video visibility
+
+Join using my referral code: ${referralCode} and let's grow together!
+Sign up here: ${referralLink}`;
+            
             const url = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
         }
